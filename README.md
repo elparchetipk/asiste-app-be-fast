@@ -6,7 +6,7 @@ Backend de la aplicación AsisTE para el control de asistencia de aprendices del
 
 ## 🏗️ Arquitectura
 
-- **Patrón**: Microservicios con Clean Architecture
+- **Patrón**: Microservicios con Clean Architecture (rate limiting)
 - **Framework**: FastAPI con Python 3.13
 - **Base de Datos**: PostgreSQL 15 con pgvector
 - **Caché**: Redis
