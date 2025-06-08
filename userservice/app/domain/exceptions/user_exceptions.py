@@ -4,60 +4,70 @@ from typing import Optional
 
 
 class UserDomainException(Exception):
-    """Base exception for user domain operations."""
+    """Base exception for user domain errors."""
     
-    def __init__(self, message: str) -> None:
+    def __init__(self, message: str, details: Optional[str] = None):
         self.message = message
+        self.details = details
         super().__init__(self.message)
 
 
 class UserNotFoundError(UserDomainException):
     """Raised when a user is not found."""
     
-    def __init__(self, user_id: Optional[str] = None, email: Optional[str] = None, document_number: Optional[str] = None) -> None:
-        if user_id:
-            message = f"User with ID {user_id} not found"
-        elif email:
-            message = f"User with email {email} not found"
-        elif document_number:
-            message = f"User with document number {document_number} not found"
-        else:
-            message = "User not found"
+    def __init__(self, identifier: str, identifier_type: str = "id"):
+        message = f"User not found with {identifier_type}: {identifier}"
         super().__init__(message)
 
 
 class UserAlreadyExistsError(UserDomainException):
-    """Raised when attempting to create a user that already exists."""
+    """Raised when trying to create a user that already exists."""
     
-    def __init__(self, email: Optional[str] = None, document_number: Optional[str] = None) -> None:
-        if email and document_number:
-            message = f"User with email {email} or document number {document_number} already exists"
-        elif email:
-            message = f"User with email {email} already exists"
-        elif document_number:
-            message = f"User with document number {document_number} already exists"
-        else:
-            message = "User already exists"
+    def __init__(self, field: str, value: str):
+        message = f"User already exists with {field}: {value}"
         super().__init__(message)
 
 
 class InvalidUserDataError(UserDomainException):
     """Raised when user data is invalid."""
-    pass
-
-
-class UserNotActiveError(UserDomainException):
-    """Raised when attempting operations on inactive user."""
     
-    def __init__(self, user_id: str) -> None:
-        super().__init__(f"User {user_id} is not active")
+    def __init__(self, field: str, reason: str):
+        message = f"Invalid {field}: {reason}"
+        super().__init__(message)
+
+
+class UserInactiveError(UserDomainException):
+    """Raised when trying to perform operations on inactive user."""
+    
+    def __init__(self, user_id: str):
+        message = f"User {user_id} is inactive"
+        super().__init__(message)
 
 
 class InvalidPasswordError(UserDomainException):
-    """Raised when password validation fails."""
-    pass
+    """Raised when password is invalid."""
+    
+    def __init__(self, reason: str = "Password does not meet requirements"):
+        super().__init__(reason)
 
 
-class UserOperationNotAllowedError(UserDomainException):
-    """Raised when a user operation is not allowed."""
-    pass
+class AuthenticationError(UserDomainException):
+    """Raised when authentication fails."""
+    
+    def __init__(self, reason: str = "Invalid credentials"):
+        super().__init__(reason)
+
+
+class AuthorizationError(UserDomainException):
+    """Raised when user lacks required permissions."""
+    
+    def __init__(self, action: str, role: str):
+        message = f"User with role '{role}' is not authorized to perform action: {action}"
+        super().__init__(message)
+
+
+class UserSessionError(UserDomainException):
+    """Raised when user session is invalid or expired."""
+    
+    def __init__(self, reason: str = "Invalid or expired session"):
+        super().__init__(reason)

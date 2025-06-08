@@ -1,12 +1,13 @@
-import uuid
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Optional, List
+import uuid
 from ..entities.user_entity import User
+
 
 class UserRepositoryInterface(ABC):
     """
-    Abstract interface for User repository operations.
-    This interface defines the contract that any User repository implementation must fulfill.
+    Repository interface for User entity.
+    Defines the contract for user persistence operations.
     """
 
     @abstractmethod
@@ -15,13 +16,13 @@ class UserRepositoryInterface(ABC):
         Create a new user in the repository.
         
         Args:
-            user: User entity to be created
+            user: User entity to create
             
         Returns:
-            User: The created user entity
+            User: The created user with any additional fields populated
             
         Raises:
-            UserAlreadyExistsException: If user with same email or document already exists
+            UserAlreadyExistsError: If user with email or document already exists
         """
         pass
 
@@ -34,7 +35,7 @@ class UserRepositoryInterface(ABC):
             user_id: UUID of the user to retrieve
             
         Returns:
-            Optional[User]: User entity if found, None otherwise
+            Optional[User]: User if found, None otherwise
         """
         pass
 
@@ -44,10 +45,10 @@ class UserRepositoryInterface(ABC):
         Retrieve a user by their email address.
         
         Args:
-            email: Email address of the user
+            email: Email address to search for
             
         Returns:
-            Optional[User]: User entity if found, None otherwise
+            Optional[User]: User if found, None otherwise
         """
         pass
 
@@ -57,10 +58,10 @@ class UserRepositoryInterface(ABC):
         Retrieve a user by their document number.
         
         Args:
-            document_number: Document number of the user
+            document_number: Document number to search for
             
         Returns:
-            Optional[User]: User entity if found, None otherwise
+            Optional[User]: User if found, None otherwise
         """
         pass
 
@@ -70,13 +71,13 @@ class UserRepositoryInterface(ABC):
         Update an existing user in the repository.
         
         Args:
-            user: User entity with updated information
+            user: User entity with updated data
             
         Returns:
-            User: The updated user entity
+            User: The updated user
             
         Raises:
-            UserNotFoundException: If user doesn't exist
+            UserNotFoundError: If user doesn't exist
         """
         pass
 
@@ -103,17 +104,17 @@ class UserRepositoryInterface(ABC):
         search_term: Optional[str] = None
     ) -> List[User]:
         """
-        List users with optional filtering and pagination.
+        List users with pagination and filtering.
         
         Args:
-            skip: Number of records to skip for pagination
+            skip: Number of records to skip (for pagination)
             limit: Maximum number of records to return
-            role_filter: Optional role to filter by
+            role_filter: Filter by user role (optional)
             active_only: If True, only return active users
-            search_term: Optional search term for name, email, or document
+            search_term: Search in name, email, or document (optional)
             
         Returns:
-            List[User]: List of user entities matching the criteria
+            List[User]: List of users matching the criteria
         """
         pass
 
@@ -128,9 +129,9 @@ class UserRepositoryInterface(ABC):
         Count users matching the given criteria.
         
         Args:
-            role_filter: Optional role to filter by
+            role_filter: Filter by user role (optional)
             active_only: If True, only count active users
-            search_term: Optional search term for name, email, or document
+            search_term: Search in name, email, or document (optional)
             
         Returns:
             int: Number of users matching the criteria
@@ -140,27 +141,27 @@ class UserRepositoryInterface(ABC):
     @abstractmethod
     async def exists_by_email(self, email: str, exclude_user_id: Optional[uuid.UUID] = None) -> bool:
         """
-        Check if a user with the given email already exists.
+        Check if a user with the given email exists.
         
         Args:
-            email: Email address to check
-            exclude_user_id: Optional user ID to exclude from the check (for updates)
+            email: Email to check
+            exclude_user_id: User ID to exclude from the check (for updates)
             
         Returns:
-            bool: True if email exists, False otherwise
+            bool: True if user exists, False otherwise
         """
         pass
 
     @abstractmethod
     async def exists_by_document_number(self, document_number: str, exclude_user_id: Optional[uuid.UUID] = None) -> bool:
         """
-        Check if a user with the given document number already exists.
+        Check if a user with the given document number exists.
         
         Args:
             document_number: Document number to check
-            exclude_user_id: Optional user ID to exclude from the check (for updates)
+            exclude_user_id: User ID to exclude from the check (for updates)
             
         Returns:
-            bool: True if document number exists, False otherwise
+            bool: True if user exists, False otherwise
         """
         pass

@@ -3,6 +3,10 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
+from ..value_objects import Email, DocumentNumber, DocumentType
+from ..exceptions import InvalidUserDataError
+
+
 class UserRole(Enum):
     APPRENTICE = "apprentice"
     INSTRUCTOR = "instructor"
@@ -14,8 +18,8 @@ class User:
     id: uuid.UUID = field(default_factory=uuid.uuid4)
     first_name: str
     last_name: str
-    email: str  # Consider creating an Email value object later
-    document_number: str # Consider creating a DocumentNumber value object later
+    email: Email
+    document_number: DocumentNumber
     hashed_password: str
     role: UserRole
     is_active: bool = True
@@ -26,28 +30,32 @@ class User:
 
     def __post_init__(self):
         if not self.first_name or not self.first_name.strip():
-            raise ValueError("First name cannot be empty")
+            raise InvalidUserDataError("first_name", "First name cannot be empty")
         if not self.last_name or not self.last_name.strip():
-            raise ValueError("Last name cannot be empty")
-        # Basic email validation, more robust validation for Email value object
-        if "@" not in self.email or "." not in self.email.split("@")[-1]:
-            raise ValueError("Invalid email format")
-        if not self.document_number or not self.document_number.strip():
-            raise ValueError("Document number cannot be empty")
-        # Add more validation as needed, e.g. password complexity if not handled elsewhere
+            raise InvalidUserDataError("last_name", "Last name cannot be empty")
+        
+        # Ensure email and document_number are value objects
+        if isinstance(self.email, str):
+            object.__setattr__(self, 'email', Email(self.email))
+        if isinstance(self.document_number, str):
+            # For backward compatibility, assume CC if string is provided
+            object.__setattr__(self, 'document_number', DocumentNumber(self.document_number, DocumentType.CC))
 
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
 
-    def update_profile(self, first_name: str | None = None, last_name: str | None = None, email: str | None = None):
+    def update_profile(self, first_name: str | None = None, last_name: str | None = None, email: Email | str | None = None):
         if first_name:
+            if not first_name.strip():
+                raise InvalidUserDataError("first_name", "First name cannot be empty")
             self.first_name = first_name
         if last_name:
+            if not last_name.strip():
+                raise InvalidUserDataError("last_name", "Last name cannot be empty")
             self.last_name = last_name
         if email:
-            # Add email validation if changed
-            if "@" not in email or "." not in email.split("@")[-1]:
-                raise ValueError("Invalid email format for update")
+            if isinstance(email, str):
+                email = Email(email)
             self.email = email
         self.updated_at = datetime.utcnow()
 
