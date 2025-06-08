@@ -18,18 +18,19 @@ from app.domain.repositories.user_repository_interface import UserRepositoryInte
 
 from app.application.use_cases.auth_use_cases import (
     LoginUseCase,
-    RefreshTokenUseCase,
+    # RefreshTokenUseCase,
     LogoutUseCase,
-    ChangePasswordUseCase
+    ValidateTokenUseCase,
+    # ChangePasswordUseCase
 )
 from app.application.use_cases.user_use_cases import (
     CreateUserUseCase,
-    GetUserUseCase,
+    GetUserByIdUseCase,
     UpdateUserUseCase,
-    DeleteUserUseCase,
+    ChangePasswordUseCase,
+    ActivateUserUseCase,
+    DeactivateUserUseCase,
     ListUsersUseCase,
-    GetUserProfileUseCase,
-    UpdateUserProfileUseCase
 )
 
 
@@ -70,28 +71,44 @@ def get_login_use_case(
     return LoginUseCase(user_repository, password_service, token_service)
 
 
-def get_refresh_token_use_case(
-    user_repository: UserRepositoryInterface = Depends(get_user_repository),
-    token_service: TokenServiceInterface = Depends(get_token_service)
-) -> RefreshTokenUseCase:
-    """Get refresh token use case instance."""
-    return RefreshTokenUseCase(user_repository, token_service)
+# def get_refresh_token_use_case(
+#     user_repository: UserRepositoryInterface = Depends(get_user_repository),
+#     token_service: TokenServiceInterface = Depends(get_token_service)
+# ) -> RefreshTokenUseCase:
+#     """Get refresh token use case instance."""
+#     return RefreshTokenUseCase(user_repository, token_service)
 
 
 def get_logout_use_case(
-    user_repository: UserRepositoryInterface = Depends(get_user_repository),
     token_service: TokenServiceInterface = Depends(get_token_service)
 ) -> LogoutUseCase:
     """Get logout use case instance."""
-    return LogoutUseCase(user_repository, token_service)
+    return LogoutUseCase(token_service)
+
+
+def get_validate_token_use_case(
+    user_repository: UserRepositoryInterface = Depends(get_user_repository),
+    token_service: TokenServiceInterface = Depends(get_token_service)
+) -> ValidateTokenUseCase:
+    """Get validate token use case instance."""
+    return ValidateTokenUseCase(token_service, user_repository)
+
+
+# def get_change_password_use_case(
+#     user_repository: UserRepositoryInterface = Depends(get_user_repository),
+#     password_service: PasswordServiceInterface = Depends(get_password_service)
+# ) -> ChangePasswordUseCase:
+#     """Get change password use case instance."""
+#     return ChangePasswordUseCase(user_repository, password_service)
 
 
 def get_change_password_use_case(
     user_repository: UserRepositoryInterface = Depends(get_user_repository),
-    password_service: PasswordServiceInterface = Depends(get_password_service)
+    password_service: PasswordServiceInterface = Depends(get_password_service),
+    email_service: EmailServiceInterface = Depends(get_email_service)
 ) -> ChangePasswordUseCase:
     """Get change password use case instance."""
-    return ChangePasswordUseCase(user_repository, password_service)
+    return ChangePasswordUseCase(user_repository, password_service, email_service)
 
 
 # Use case dependencies - User Management
@@ -104,11 +121,11 @@ def get_create_user_use_case(
     return CreateUserUseCase(user_repository, password_service, email_service)
 
 
-def get_get_user_use_case(
+def get_get_user_by_id_use_case(
     user_repository: UserRepositoryInterface = Depends(get_user_repository)
-) -> GetUserUseCase:
-    """Get get user use case instance."""
-    return GetUserUseCase(user_repository)
+) -> GetUserByIdUseCase:
+    """Get get user by id use case instance."""
+    return GetUserByIdUseCase(user_repository)
 
 
 def get_update_user_use_case(
@@ -118,11 +135,26 @@ def get_update_user_use_case(
     return UpdateUserUseCase(user_repository)
 
 
-def get_delete_user_use_case(
+# def get_delete_user_use_case(
+#     user_repository: UserRepositoryInterface = Depends(get_user_repository)
+# ) -> DeleteUserUseCase:
+#     """Get delete user use case instance."""
+#     return DeleteUserUseCase(user_repository)
+
+
+def get_activate_user_use_case(
     user_repository: UserRepositoryInterface = Depends(get_user_repository)
-) -> DeleteUserUseCase:
-    """Get delete user use case instance."""
-    return DeleteUserUseCase(user_repository)
+) -> ActivateUserUseCase:
+    """Get activate user use case instance."""
+    return ActivateUserUseCase(user_repository)
+
+
+def get_deactivate_user_use_case(
+    user_repository: UserRepositoryInterface = Depends(get_user_repository),
+    email_service: EmailServiceInterface = Depends(get_email_service)
+) -> DeactivateUserUseCase:
+    """Get deactivate user use case instance."""
+    return DeactivateUserUseCase(user_repository, email_service)
 
 
 def get_list_users_use_case(
@@ -132,15 +164,15 @@ def get_list_users_use_case(
     return ListUsersUseCase(user_repository)
 
 
-def get_get_user_profile_use_case(
-    user_repository: UserRepositoryInterface = Depends(get_user_repository)
-) -> GetUserProfileUseCase:
-    """Get get user profile use case instance."""
-    return GetUserProfileUseCase(user_repository)
+# def get_get_user_profile_use_case(
+#     user_repository: UserRepositoryInterface = Depends(get_user_repository)
+# ) -> GetUserProfileUseCase:
+#     """Get get user profile use case instance."""
+#     return GetUserProfileUseCase(user_repository)
 
 
-def get_update_user_profile_use_case(
-    user_repository: UserRepositoryInterface = Depends(get_user_repository)
-) -> UpdateUserProfileUseCase:
-    """Get update user profile use case instance."""
-    return UpdateUserProfileUseCase(user_repository)
+# def get_update_user_profile_use_case(
+#     user_repository: UserRepositoryInterface = Depends(get_user_repository)
+# ) -> UpdateUserProfileUseCase:
+#     """Get update user profile use case instance."""
+#     return UpdateUserProfileUseCase(user_repository)

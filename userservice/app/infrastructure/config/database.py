@@ -4,6 +4,7 @@ import os
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
+from sqlalchemy import text
 
 from app.config import settings
 from ..models import Base
@@ -67,3 +68,13 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
+
+
+async def check_database_health() -> bool:
+    """Check database connection health."""
+    try:
+        async with database_config.async_session_maker() as session:
+            await session.execute(text("SELECT 1"))
+            return True
+    except Exception:
+        return False

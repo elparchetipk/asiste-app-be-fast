@@ -4,24 +4,18 @@ from datetime import datetime
 from enum import Enum
 
 from ..value_objects import Email, DocumentNumber, DocumentType
+from ..value_objects.user_role import UserRole
 from ..exceptions import InvalidUserDataError
-
-
-class UserRole(Enum):
-    APPRENTICE = "apprentice"
-    INSTRUCTOR = "instructor"
-    ADMINISTRATIVE = "administrative"
-    ADMIN = "admin"
 
 @dataclass
 class User:
-    id: uuid.UUID = field(default_factory=uuid.uuid4)
     first_name: str
     last_name: str
     email: Email
     document_number: DocumentNumber
     hashed_password: str
     role: UserRole
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
     is_active: bool = True
     must_change_password: bool = True
     created_at: datetime = field(default_factory=datetime.utcnow)

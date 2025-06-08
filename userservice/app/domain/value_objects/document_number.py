@@ -5,16 +5,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import ClassVar
 
+from .document_type import DocumentType
 from ..exceptions import InvalidUserDataError
-
-
-class DocumentType(Enum):
-    """Supported document types in Colombia."""
-    
-    CC = "CC"  # Cédula de Ciudadanía
-    TI = "TI"  # Tarjeta de Identidad
-    CE = "CE"  # Cédula de Extranjería
-    PA = "PA"  # Pasaporte
 
 
 @dataclass(frozen=True)

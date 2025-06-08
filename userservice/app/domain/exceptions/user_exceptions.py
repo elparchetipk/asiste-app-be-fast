@@ -71,3 +71,40 @@ class UserSessionError(UserDomainException):
     
     def __init__(self, reason: str = "Invalid or expired session"):
         super().__init__(reason)
+
+
+class InvalidTokenError(UserDomainException):
+    """Raised when a token is invalid or expired."""
+    
+    def __init__(self, reason: str = "Invalid or expired token"):
+        super().__init__(reason)
+
+
+class EmailAlreadyExistsError(UserDomainException):
+    """Raised when trying to create a user with an email that already exists."""
+    
+    def __init__(self, email: str):
+        message = f"User with email '{email}' already exists"
+        super().__init__(message)
+
+
+class DocumentAlreadyExistsError(UserDomainException):
+    """Raised when trying to create a user with a document that already exists."""
+    
+    def __init__(self, document_number: str):
+        message = f"User with document number '{document_number}' already exists"
+        super().__init__(message)
+
+
+class InvalidCredentialsError(UserDomainException):
+    """Raised when login credentials are invalid."""
+    
+    def __init__(self, reason: str = "Invalid email or password"):
+        super().__init__(reason)
+
+
+class WeakPasswordError(UserDomainException):
+    """Raised when password doesn't meet security requirements."""
+    
+    def __init__(self, reason: str = "Password is too weak"):
+        super().__init__(reason)

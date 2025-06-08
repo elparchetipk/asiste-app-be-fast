@@ -5,9 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
-from app.infrastructure.config.database import engine, get_db_session
+from app.infrastructure.config.database import engine, get_db_session, check_database_health
 from app.presentation.routers import auth_router, user_router
 from app.presentation.schemas.user_schemas import HealthCheckResponse, ErrorResponse
 from app.domain.exceptions.user_exceptions import (
@@ -150,12 +150,21 @@ async def health_check():
     """
     try:
         # Verificar conexión a la base de datos
-        async with get_db_session() as session:
-            await session.execute("SELECT 1")
+        db_healthy = await check_database_health()
+        
+        if not db_healthy:
+            return JSONResponse(
+                status_code=503,            content={
+                "status": "unhealthy",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "version": "1.0.0",
+                "error": "Database connection failed"
+            }
+            )
         
         return HealthCheckResponse(
             status="healthy",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             version="1.0.0"
         )
     except Exception as e:
@@ -164,7 +173,7 @@ async def health_check():
             status_code=503,
             content={
                 "status": "unhealthy",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "version": "1.0.0",
                 "error": str(e)
             }

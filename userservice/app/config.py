@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     """Application settings."""
     
     # Database settings
-    DATABASE_URL: str = "postgresql+asyncpg://sicora_user:sicora_password@localhost:5432/sicora_db"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./test.db"  # Updated for SQLite
     DATABASE_ECHO: bool = False
     
     # JWT settings

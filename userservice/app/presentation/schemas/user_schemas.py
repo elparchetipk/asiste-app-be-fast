@@ -171,14 +171,30 @@ class UserResponse(BaseModel):
     )
 
 
+class LoginRequest(BaseModel):
+    """Schema for user login request."""
+    
+    email: EmailStr = Field(..., description="User's email address")
+    password: str = Field(..., min_length=1, description="User's password")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "email": "user@example.com",
+                "password": "password123"
+            }
+        }
+    )
+
+
 class LoginResponse(BaseModel):
     """Schema for authentication token response."""
     
     access_token: str = Field(..., description="JWT access token")
-    refresh_token: str = Field(..., description="JWT refresh token")
     token_type: str = Field(..., description="Type of token (bearer)")
     expires_in: int = Field(..., description="Token expiration time in seconds")
     user: UserResponse = Field(..., description="User information")
+    refresh_token: Optional[str] = Field(None, description="JWT refresh token (optional)")
     
     model_config = ConfigDict(
         json_schema_extra={
