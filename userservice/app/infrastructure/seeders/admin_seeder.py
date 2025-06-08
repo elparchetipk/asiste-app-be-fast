@@ -108,6 +108,7 @@ class AdminSeeder:
         first_name: str = "Test",
         last_name: str = "Admin",
         document_number: str = "1000000002",
+        force_recreate: bool = False,
     ) -> User:
         """
         Crear un usuario admin específico para testing.
@@ -118,14 +119,31 @@ class AdminSeeder:
             first_name: Nombre del admin
             last_name: Apellido del admin
             document_number: Número de documento
+            force_recreate: Si True, elimina y recrea el usuario si ya existe
             
         Returns:
-            User: El usuario admin creado
+            User: El usuario admin creado o existente
             
         Raises:
             Exception: Si hay error en la creación
         """
         try:
+            # Verificar si el admin ya existe
+            existing_admin = None
+            try:
+                existing_admin = await self.user_repository.get_by_email(email)
+            except Exception:
+                pass  # El usuario no existe
+            
+            if existing_admin and not force_recreate:
+                print(f"ℹ️  Usuario admin de testing ya existe: {email}")
+                return existing_admin
+            
+            if existing_admin and force_recreate:
+                # Eliminar el usuario existente
+                await self.user_repository.delete(existing_admin.id)
+                print(f"🗑️  Usuario admin existente eliminado: {email}")
+            
             # Crear value objects
             admin_email = Email(email)
             admin_document = DocumentNumber(document_number, DocumentType.CC)
