@@ -219,7 +219,7 @@ class AuthTestHelper:
             "email": f"{prefix}.{uuid.uuid4().hex[:8]}@test.com",
             "document_number": f"{random.randint(50000000, 59999999)}",
             "document_type": "CC",
-            "password": f"{prefix.title()}Pass123!",
+            "password": f"{prefix.title()}Secure{random.randint(100, 999)}!",
             "role": role.value
         }
 
@@ -252,19 +252,27 @@ class TestDataFactory:
     def create_user_data(role: UserRole = UserRole.APPRENTICE, 
                         prefix: str = "test") -> Dict:
         """Crear datos de usuario para testing."""
+        # Generar número de documento válido para CC (7-10 dígitos)
+        base_document = random.randint(10000000, 99999999)  # 8 dígitos
+        
+        # Generar contraseña que cumpla todos los requisitos de seguridad
+        # Mínimo 8 chars, 1 mayúscula, 1 minúscula, 1 dígito, 1 especial
+        password_suffix = random.randint(100, 999)
+        secure_password = f"{prefix.title()}Secure{password_suffix}!"
+        
         return {
             "first_name": f"{prefix.title()}",
-            "last_name": "User",
+            "last_name": "User", 
             "email": f"{prefix}.{uuid.uuid4().hex[:8]}@test.com",
-            "document_number": f"{prefix.upper()}{random.randint(10000000, 99999999)}",
+            "document_number": str(base_document),  # Solo dígitos para CC
             "document_type": "CC",
-            "password": f"{prefix.title()}Pass123!",
+            "password": secure_password,
             "role": role.value
         }
 
     @staticmethod
-    def create_password_change_data(current_password: str = "OldPass123!", 
-                                   new_password: str = "NewPass123!") -> Dict:
+    def create_password_change_data(current_password: str = "OldSecure123!", 
+                                   new_password: str = "NewSecure456!") -> Dict:
         """Crear datos para cambio de contraseña."""
         return {
             "current_password": current_password,
