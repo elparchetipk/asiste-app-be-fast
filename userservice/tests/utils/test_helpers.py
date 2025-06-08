@@ -213,13 +213,26 @@ class AuthTestHelper:
     def create_test_user(self, role: UserRole = UserRole.APPRENTICE, 
                         prefix: str = "test") -> Tuple[Dict, Optional[str]]:
         """Crear un usuario temporal para testing."""
+        # Mapear prefijos a palabras seguras para evitar patrones débiles
+        safe_prefix_map = {
+            "test": "Test",
+            "admin": "Chief",
+            "user": "Person",
+            "password": "Secret",
+            "instructor": "Teacher",
+            "apprentice": "Student",
+            "administrative": "Staff"
+        }
+        
+        safe_prefix = safe_prefix_map.get(prefix.lower(), prefix.title())
+        
         user_data = {
             "first_name": f"{prefix.title()}",
             "last_name": "User",
             "email": f"{prefix}.{uuid.uuid4().hex[:8]}@test.com",
             "document_number": f"{random.randint(50000000, 59999999)}",
             "document_type": "CC",
-            "password": f"{prefix.title()}Secure{random.randint(100, 999)}!",
+            "password": f"{safe_prefix}Secure{random.randint(100, 999)}!",
             "role": role.value
         }
 
@@ -255,10 +268,23 @@ class TestDataFactory:
         # Generar número de documento válido para CC (7-10 dígitos)
         base_document = random.randint(10000000, 99999999)  # 8 dígitos
         
+        # Mapear prefijos a palabras seguras para evitar patrones débiles (admin, user, password)
+        safe_prefix_map = {
+            "test": "Test",
+            "admin": "Chief",      # Evitar "admin"
+            "user": "Person",      # Evitar "user" 
+            "password": "Secret",  # Evitar "password"
+            "instructor": "Teacher",
+            "apprentice": "Student",
+            "administrative": "Staff"
+        }
+        
+        safe_prefix = safe_prefix_map.get(prefix.lower(), prefix.title())
+        
         # Generar contraseña que cumpla todos los requisitos de seguridad
         # Mínimo 8 chars, 1 mayúscula, 1 minúscula, 1 dígito, 1 especial
         password_suffix = random.randint(100, 999)
-        secure_password = f"{prefix.title()}Secure{password_suffix}!"
+        secure_password = f"{safe_prefix}Secure{password_suffix}!"
         
         return {
             "first_name": f"{prefix.title()}",
