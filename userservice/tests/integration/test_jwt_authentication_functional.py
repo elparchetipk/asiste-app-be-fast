@@ -3,16 +3,11 @@ Pruebas funcionales completas de autenticación JWT con usuarios reales.
 """
 
 import pytest
-import asyncio
 from uuid import uuid4
 from fastapi.testclient import TestClient
 
 from main import app
 from app.domain.value_objects.user_role import UserRole
-from app.infrastructure.config.database import get_db_session
-from app.domain.entities.user_entity import User
-from app.infrastructure.adapters.password_service import PasswordService
-from app.infrastructure.adapters.sqlalchemy_user_repository import SQLAlchemyUserRepository
 
 
 client = TestClient(app)
@@ -20,74 +15,56 @@ client = TestClient(app)
 
 class TestJWTAuthenticationFunctional:
     """Pruebas funcionales completas de autenticación JWT."""
-
+    
     @pytest.fixture(autouse=True)
-    async def setup_test_users(self):
-        """Configurar usuarios de prueba directamente en la base de datos."""
-        async for session in get_db_session():
-            try:
-                # Crear instancias de servicios
-                password_service = PasswordService()
-                user_repository = SQLAlchemyUserRepository(session)
-                
-                # Crear usuario ADMIN de prueba
-                self.admin_email = f"admin.{uuid4().hex[:8]}@test.com"
-                self.admin_password = "AdminPass123!"
-                
-                admin_user = User(
-                    first_name="Admin",
-                    last_name="Test",
-                    email=self.admin_email,
-                    document_number=f"ADM{uuid4().hex[:8].upper()}",
-                    document_type="CC",
-                    password_hash=password_service.hash_password(self.admin_password),
-                    role=UserRole.ADMIN,
-                    is_active=True
-                )
-                
-                await user_repository.create(admin_user)
-                self.admin_user_id = admin_user.id
-                
-                # Crear usuario INSTRUCTOR de prueba
-                self.instructor_email = f"instructor.{uuid4().hex[:8]}@test.com"
-                self.instructor_password = "InstructorPass123!"
-                
-                instructor_user = User(
-                    first_name="Instructor",
-                    last_name="Test",
-                    email=self.instructor_email,
-                    document_number=f"INS{uuid4().hex[:8].upper()}",
-                    document_type="CC",
-                    password_hash=password_service.hash_password(self.instructor_password),
-                    role=UserRole.INSTRUCTOR,
-                    is_active=True
-                )
-                
-                await user_repository.create(instructor_user)
-                self.instructor_user_id = instructor_user.id
-                
-                # Crear usuario APPRENTICE de prueba
-                self.apprentice_email = f"apprentice.{uuid4().hex[:8]}@test.com"
-                self.apprentice_password = "ApprenticePass123!"
-                
-                apprentice_user = User(
-                    first_name="Apprentice",
-                    last_name="Test",
-                    email=self.apprentice_email,
-                    document_number=f"APP{uuid4().hex[:8].upper()}",
-                    document_type="CC",
-                    password_hash=password_service.hash_password(self.apprentice_password),
-                    role=UserRole.APPRENTICE,
-                    is_active=True
-                )
-                
-                await user_repository.create(apprentice_user)
-                self.apprentice_user_id = apprentice_user.id
-                
-                break
-            except Exception as e:
-                await session.rollback()
-                raise e
+    def setup_test_data(self):
+        """Configurar datos de prueba usando la API existente."""
+        # Para estas pruebas, vamos a asumir que ya existe un usuario admin
+        # que puede ser usado para las pruebas. En un entorno real, esto se
+        # configuraría con seeders o datos iniciales.
+        
+        # Datos de usuarios que intentaremos crear a través de la API
+        self.test_users = {
+            "admin": {
+                "email": f"admin.{uuid4().hex[:8]}@test.com",
+                "password": "AdminPass123!",
+                "data": {
+                    "first_name": "Admin",
+                    "last_name": "Test",
+                    "email": f"admin.{uuid4().hex[:8]}@test.com",
+                    "document_number": f"ADM{uuid4().hex[:8].upper()}",
+                    "document_type": "CC",
+                    "password": "AdminPass123!",
+                    "role": UserRole.ADMIN.value
+                }
+            },
+            "instructor": {
+                "email": f"instructor.{uuid4().hex[:8]}@test.com", 
+                "password": "InstructorPass123!",
+                "data": {
+                    "first_name": "Instructor",
+                    "last_name": "Test",
+                    "email": f"instructor.{uuid4().hex[:8]}@test.com",
+                    "document_number": f"INS{uuid4().hex[:8].upper()}",
+                    "document_type": "CC",
+                    "password": "InstructorPass123!",
+                    "role": UserRole.INSTRUCTOR.value
+                }
+            },
+            "apprentice": {
+                "email": f"apprentice.{uuid4().hex[:8]}@test.com",
+                "password": "ApprenticePass123!",
+                "data": {
+                    "first_name": "Apprentice",
+                    "last_name": "Test",
+                    "email": f"apprentice.{uuid4().hex[:8]}@test.com",
+                    "document_number": f"APP{uuid4().hex[:8].upper()}",
+                    "document_type": "CC",
+                    "password": "ApprenticePass123!",
+                    "role": UserRole.APPRENTICE.value
+                }
+            }
+        }
 
     def get_auth_token(self, email: str, password: str) -> str:
         """Obtener token de autenticación."""
