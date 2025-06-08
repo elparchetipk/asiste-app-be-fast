@@ -6,8 +6,11 @@ import uuid
 import random
 from typing import Dict, Optional, Tuple
 from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.value_objects.user_role import UserRole
+from app.infrastructure.config.database import get_db_session
+from app.infrastructure.seeders.admin_seeder import AdminSeeder
 
 
 class AuthTestHelper:
@@ -79,47 +82,87 @@ class AuthTestHelper:
         return seed_users
 
     def seed_database(self) -> Dict[str, Dict]:
-        """Sembrar la base de datos con usuarios para testing."""
+        """Sembrar la base de datos con usuarios para testing (versión síncrona)."""
         if not self._seed_users:
             self.create_seed_users()
 
         seeded_users = {}
 
-        # Crear admin primero (necesario para crear otros usuarios)
+        # Para usar en tests síncronos, crear admin directamente con credenciales conocidas
+        # Intentar login para verificar si el admin ya existe
         admin_data = self._seed_users["admin"]["data"]
+        admin_token = self.get_auth_token(
+            admin_data["email"], 
+            admin_data["password"]
+        )
         
-        # Crear admin directamente usando el endpoint público o método directo
-        # (El primer admin podría necesitar un método especial)
-        response = self.client.post("/users/", json=admin_data)
-        
-        if response.status_code == 201:
-            seeded_users["admin"] = response.json()
-            admin_token = self.get_auth_token(
-                self._seed_users["admin"]["email"], 
-                self._seed_users["admin"]["password"]
-            )
-            if admin_token:
-                self._user_tokens["admin"] = admin_token
+        if admin_token:
+            # El admin ya existe, obtener sus datos
+            self._user_tokens["admin"] = admin_token
+            admin_headers = self.get_auth_headers(admin_token)
+            
+            # Simular datos del admin existente para compatibilidad
+            seeded_users["admin"] = {
+                "email": admin_data["email"],
+                "first_name": admin_data["first_name"],
+                "last_name": admin_data["last_name"],
+                "document_number": admin_data["document_number"],
+                "role": admin_data["role"],
+                "is_active": True
+            }
+            
+            # Crear otros usuarios usando el admin token
+            for role in ["administrative", "instructor", "apprentice"]:
+                user_data = self._seed_users[role]["data"]
+                response = self.client.post("/users/", json=user_data, headers=admin_headers)
                 
-                # Usar admin token para crear otros usuarios
-                admin_headers = self.get_auth_headers(admin_token)
-                
-                for role in ["administrative", "instructor", "apprentice"]:
-                    user_data = self._seed_users[role]["data"]
-                    response = self.client.post("/users/", json=user_data, headers=admin_headers)
+                if response.status_code == 201:
+                    seeded_users[role] = response.json()
                     
-                    if response.status_code == 201:
-                        seeded_users[role] = response.json()
-                        
-                        # Obtener token para cada usuario
-                        token = self.get_auth_token(
-                            self._seed_users[role]["email"],
-                            self._seed_users[role]["password"]
-                        )
-                        if token:
-                            self._user_tokens[role] = token
+                    # Obtener token para cada usuario
+                    token = self.get_auth_token(
+                        self._seed_users[role]["email"],
+                        self._seed_users[role]["password"]
+                    )
+                    if token:
+                        self._user_tokens[role] = token
+                else:
+                    print(f"❌ Error al crear usuario {role}: {response.status_code} - {response.text}")
+        else:
+            print("❌ No se pudo obtener token de admin. Asegúrate de que el admin inicial existe.")
+            print("💡 Ejecuta seed_admin_user() primero para crear el usuario admin inicial.")
 
         return seeded_users
+
+    async def seed_admin_user(self) -> bool:
+        """Crear el usuario admin inicial usando AdminSeeder."""
+        try:
+            admin_data = self._seed_users["admin"]["data"] if self._seed_users else {}
+            
+            if not admin_data:
+                self.create_seed_users()
+                admin_data = self._seed_users["admin"]["data"]
+            
+            async for session in get_db_session():
+                seeder = AdminSeeder(session)
+                
+                admin_user = await seeder.seed_test_admin(
+                    email=admin_data["email"],
+                    password=admin_data["password"],
+                    first_name=admin_data["first_name"],
+                    last_name=admin_data["last_name"],
+                    document_number=admin_data["document_number"]
+                )
+                
+                if admin_user:
+                    print(f"✅ Usuario admin creado para testing: {admin_data['email']}")
+                    return True
+                break
+                
+        except Exception as e:
+            print(f"❌ Error al crear admin user: {e}")
+            
+        return False
 
     def get_auth_token(self, email: str, password: str) -> Optional[str]:
         """Obtener token de autenticación."""

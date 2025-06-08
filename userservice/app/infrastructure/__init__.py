@@ -4,6 +4,7 @@ from .models import UserModel, Base
 from .repositories import SQLAlchemyUserRepository
 from .adapters import BcryptPasswordService, JWTTokenService, SMTPEmailService
 from .config import database_config, DatabaseConfig
+from .seeders import AdminSeeder
 
 __all__ = [
     # Models
@@ -18,4 +19,6 @@ __all__ = [
     # Config
     "database_config",
     "DatabaseConfig",
+    # Seeders
+    "AdminSeeder",
 ]
