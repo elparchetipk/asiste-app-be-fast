@@ -31,7 +31,7 @@ class AuthTestHelper:
                     "first_name": "Admin",
                     "last_name": "Seed", 
                     "email": f"admin.seed.{uuid.uuid4().hex[:8]}@test.com",
-                    "document_number": f"ADMSEED{random.randint(10000, 99999)}",
+                    "document_number": f"{random.randint(10000000, 99999999)}",
                     "document_type": "CC",
                     "password": "AdminSeedPass123!",
                     "role": UserRole.ADMIN.value
@@ -44,7 +44,7 @@ class AuthTestHelper:
                     "first_name": "Administrative",
                     "last_name": "Staff",
                     "email": f"admin.staff.{uuid.uuid4().hex[:8]}@test.com",
-                    "document_number": f"ADMSTAFF{random.randint(10000, 99999)}",
+                    "document_number": f"{random.randint(20000000, 29999999)}",
                     "document_type": "CC",
                     "password": "AdminStaffPass123!",
                     "role": UserRole.ADMINISTRATIVE.value
@@ -57,7 +57,7 @@ class AuthTestHelper:
                     "first_name": "Instructor",
                     "last_name": "Seed",
                     "email": f"instructor.seed.{uuid.uuid4().hex[:8]}@test.com",
-                    "document_number": f"INSSEED{random.randint(10000, 99999)}",
+                    "document_number": f"{random.randint(30000000, 39999999)}",
                     "document_type": "CC",
                     "password": "InstructorSeedPass123!",
                     "role": UserRole.INSTRUCTOR.value
@@ -70,7 +70,7 @@ class AuthTestHelper:
                     "first_name": "Apprentice",
                     "last_name": "Seed",
                     "email": f"apprentice.seed.{uuid.uuid4().hex[:8]}@test.com",
-                    "document_number": f"APPSEED{random.randint(10000, 99999)}",
+                    "document_number": f"{random.randint(40000000, 49999999)}",
                     "document_type": "CC",
                     "password": "ApprenticeSeedPass123!",
                     "role": UserRole.APPRENTICE.value
@@ -217,7 +217,7 @@ class AuthTestHelper:
             "first_name": f"{prefix.title()}",
             "last_name": "User",
             "email": f"{prefix}.{uuid.uuid4().hex[:8]}@test.com",
-            "document_number": f"{prefix.upper()}{random.randint(10000, 99999)}",
+            "document_number": f"{random.randint(50000000, 59999999)}",
             "document_type": "CC",
             "password": f"{prefix.title()}Pass123!",
             "role": role.value

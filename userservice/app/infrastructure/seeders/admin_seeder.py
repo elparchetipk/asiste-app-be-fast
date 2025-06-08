@@ -28,7 +28,7 @@ class AdminSeeder:
         password: str = "AdminSicora123!",
         first_name: str = "Admin",
         last_name: str = "SICORA",
-        document_number: str = "ADMIN001",
+        document_number: str = "1000000001",
     ) -> Optional[User]:
         """
         Crear el primer usuario admin si no existe ningún usuario en el sistema.
@@ -38,7 +38,7 @@ class AdminSeeder:
             password: Contraseña del admin (default: AdminSicora123!)
             first_name: Nombre del admin (default: Admin)
             last_name: Apellido del admin (default: SICORA)
-            document_number: Número de documento (default: ADMIN001)
+            document_number: Número de documento (default: 1000000001)
             
         Returns:
             User: El usuario admin creado o None si ya existen usuarios
@@ -107,7 +107,7 @@ class AdminSeeder:
         password: str,
         first_name: str = "Test",
         last_name: str = "Admin",
-        document_number: str = "TESTADMIN001",
+        document_number: str = "1000000002",
     ) -> User:
         """
         Crear un usuario admin específico para testing.

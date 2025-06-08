@@ -33,7 +33,7 @@ async def test_admin_seeder():
                 password="TestAdmin123!",
                 first_name="Test",
                 last_name="Admin",
-                document_number="TESTADM001"
+                document_number="1000000002"
             )
             
             if admin_user:
@@ -68,7 +68,8 @@ async def test_first_admin_seeder():
                 email="first.admin@sicora.sena.edu.co",
                 password="FirstAdmin123!",
                 first_name="First",
-                last_name="Admin"
+                last_name="Admin",
+                document_number="1000000001"
             )
             
             if admin_user:
