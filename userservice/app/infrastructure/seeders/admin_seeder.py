@@ -76,7 +76,7 @@ class AdminSeeder:
             
             # Crear entidad User
             admin_user = User(
-                id=str(uuid.uuid4()),
+                id=uuid.uuid4(),
                 first_name=first_name,
                 last_name=last_name,
                 email=admin_email,
@@ -135,7 +135,7 @@ class AdminSeeder:
             
             # Crear entidad User
             admin_user = User(
-                id=str(uuid.uuid4()),
+                id=uuid.uuid4(),
                 first_name=first_name,
                 last_name=last_name,
                 email=admin_email,
