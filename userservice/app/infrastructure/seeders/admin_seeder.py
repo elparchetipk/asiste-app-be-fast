@@ -89,6 +89,7 @@ class AdminSeeder:
             
             # Guardar en base de datos
             created_admin = await self.user_repository.create(admin_user)
+            await self.session.commit()  # Asegurar commit para persistir datos
             
             print(f"✅ Usuario admin inicial creado exitosamente:")
             print(f"   Email: {email}")
@@ -142,6 +143,7 @@ class AdminSeeder:
             if existing_admin and force_recreate:
                 # Eliminar el usuario existente
                 await self.user_repository.delete(existing_admin.id)
+                await self.session.commit()  # Commit para asegurar eliminación
                 print(f"🗑️  Usuario admin existente eliminado: {email}")
             
             # Crear value objects
@@ -166,6 +168,7 @@ class AdminSeeder:
             
             # Guardar en base de datos
             created_admin = await self.user_repository.create(admin_user)
+            await self.session.commit()  # Asegurar commit para persistir datos
             
             print(f"✅ Usuario admin de testing creado: {email}")
             
