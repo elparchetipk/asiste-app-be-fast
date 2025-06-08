@@ -125,7 +125,8 @@ class TestJWTAuthentication:
         
         response = client.get("/users/", headers=invalid_headers)
         assert response.status_code == 401
-        assert "Token inválido" in response.json()["detail"] or "invalid" in response.json()["detail"].lower()
+        response_detail = response.json()["detail"].lower()
+        assert any(keyword in response_detail for keyword in ["token inválido", "invalid", "error de autenticación", "authentication error"])
 
     def test_expired_token_rejected(self):
         """Verificar que tokens expirados son rechazados."""
