@@ -23,16 +23,17 @@ from app.application.dtos.user_dtos import (
 from app.presentation.schemas.user_schemas import (
     LoginRequest,
     LoginResponse,
-    MessageResponse
+    MessageResponse,
+    UserResponse
 )
-# from app.presentation.dependencies.auth import get_current_user
-# from app.domain.entities.user_entity import User
-# from app.domain.exceptions.user_exceptions import (
-#     InvalidCredentialsError,
-#     UserNotFoundError,
-#     InvalidTokenError,
-#     WeakPasswordError
-# )
+from app.presentation.dependencies.auth import get_current_user, get_current_active_user
+from app.domain.entities.user_entity import User
+from app.domain.exceptions.user_exceptions import (
+    AuthenticationError,
+    UserNotFoundError,
+    InvalidTokenError,
+    WeakPasswordError
+)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -60,12 +61,87 @@ async def login(
             expires_in=result.expires_in,
             user=result.user
         )
+    except AuthenticationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"}
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
             headers={"WWW-Authenticate": "Bearer"}
         )
+
+
+@router.post("/logout", response_model=MessageResponse)
+async def logout(
+    current_user: Annotated[User, Depends(get_current_user)],
+    logout_use_case: Annotated[LogoutUseCase, Depends(get_logout_use_case)]
+):
+    """
+    Cerrar sesión del usuario actual.
+    """
+    try:
+        await logout_use_case.execute(current_user.id)
+        return MessageResponse(message="Sesión cerrada exitosamente")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor"
+        )
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_profile(
+    current_user: Annotated[User, Depends(get_current_active_user)]
+):
+    """
+    Obtener el perfil del usuario autenticado.
+    """
+    from app.application.dtos.user_dtos import UserResponseDTO
+    
+    return UserResponseDTO(
+        id=current_user.id,
+        first_name=current_user.first_name,
+        last_name=current_user.last_name,
+        email=current_user.email.value,
+        document_number=current_user.document_number.value,
+        document_type=current_user.document_number.document_type.value,
+        role=current_user.role.value,
+        is_active=current_user.is_active,
+        must_change_password=current_user.must_change_password,
+        phone=current_user.phone,
+        created_at=current_user.created_at,
+        updated_at=current_user.updated_at,
+        last_login_at=current_user.last_login_at
+    )
+
+
+@router.post("/validate", response_model=UserResponse)
+async def validate_token(
+    validate_use_case: Annotated[ValidateTokenUseCase, Depends(get_validate_token_use_case)],
+    current_user: Annotated[User, Depends(get_current_user)]
+):
+    """
+    Validar token y obtener información del usuario.
+    """
+    return UserResponseDTO(
+        id=current_user.id,
+        first_name=current_user.first_name,
+        last_name=current_user.last_name,
+        email=current_user.email.value,
+        document_number=current_user.document_number.value,
+        document_type=current_user.document_number.document_type.value,
+        role=current_user.role.value,
+        is_active=current_user.is_active,
+        must_change_password=current_user.must_change_password,
+        phone=current_user.phone,
+        created_at=current_user.created_at,
+        updated_at=current_user.updated_at,
+        last_login_at=current_user.last_login_at
+    )
 
 
 # @router.post("/refresh", response_model=LoginResponse)
