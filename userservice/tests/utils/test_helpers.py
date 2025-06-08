@@ -168,7 +168,7 @@ class AuthTestHelper:
         """Obtener token de autenticación."""
         try:
             response = self.client.post("/auth/login", json={
-                "username": email,
+                "email": email,
                 "password": password
             })
             
