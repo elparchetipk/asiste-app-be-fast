@@ -33,7 +33,7 @@ async def test_integration_flow():
     # 4. Intentar login directo con endpoint de auth
     print("\n🔑 Probando login...")
     login_response = client.post("/auth/login", json={
-        "username": admin_data["email"],
+        "email": admin_data["email"],
         "password": admin_data["password"]
     })
     print(f"Login status: {login_response.status_code}")
