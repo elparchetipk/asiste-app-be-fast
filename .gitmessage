@@ -1,0 +1,29 @@
+# <type>[optional scope]: <description>
+#
+# [optional body]
+#
+# [optional footer(s)]
+#
+# Types:
+# feat     - A new feature
+# fix      - A bug fix
+# docs     - Documentation only changes
+# style    - Changes that do not affect the meaning of the code
+# refactor - A code change that neither fixes a bug nor adds a feature
+# perf     - A code change that improves performance
+# test     - Adding missing tests or correcting existing tests
+# chore    - Changes to the build process or auxiliary tools
+# ci       - Changes to CI configuration files and scripts
+# build    - Changes that affect the build system or external dependencies
+#
+# Examples:
+# feat(userservice): add user authentication endpoint
+# fix(db): resolve connection pool timeout issue
+# docs: update API documentation for userservice
+# chore(deps): update fastapi to version 0.115.6
+#
+# Breaking changes:
+# feat(api)!: remove deprecated endpoints
+# feat(userservice): add new auth system
+#
+# BREAKING CHANGE: removed support for legacy authentication

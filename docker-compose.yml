@@ -1,0 +1,181 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: asiste_postgres
+    environment:
+      POSTGRES_DB: asiste_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - asiste_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: asiste_redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - asiste_network
+
+  userservice:
+    build:
+      context: ./userservice
+      dockerfile: Dockerfile
+    container_name: asiste_userservice
+    environment:
+      - DATABASE_URL=postgresql://userservice_user:userservice_password@postgres:5432/asiste_db
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=your-secret-key-change-in-production
+      - PYTHONPATH=/app
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '8001:8000'
+    volumes:
+      - ./userservice:/app
+    networks:
+      - asiste_network
+    restart: unless-stopped
+
+  scheduleservice:
+    build:
+      context: ./scheduleservice
+      dockerfile: Dockerfile
+    container_name: asiste_scheduleservice
+    environment:
+      - DATABASE_URL=postgresql://scheduleservice_user:scheduleservice_password@postgres:5432/asiste_db
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=your-secret-key-change-in-production
+      - PYTHONPATH=/app
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '8002:8000'
+    volumes:
+      - ./scheduleservice:/app
+    networks:
+      - asiste_network
+    restart: unless-stopped
+
+  attendanceservice:
+    build:
+      context: ./attendanceservice
+      dockerfile: Dockerfile
+    container_name: asiste_attendanceservice
+    environment:
+      - DATABASE_URL=postgresql://attendanceservice_user:attendanceservice_password@postgres:5432/asiste_db
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=your-secret-key-change-in-production
+      - PYTHONPATH=/app
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '8003:8000'
+    volumes:
+      - ./attendanceservice:/app
+    networks:
+      - asiste_network
+    restart: unless-stopped
+
+  evalinservice:
+    build:
+      context: ./evalinservice
+      dockerfile: Dockerfile
+    container_name: asiste_evalinservice
+    environment:
+      - DATABASE_URL=postgresql://evalinservice_user:evalinservice_password@postgres:5432/asiste_db
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=your-secret-key-change-in-production
+      - PYTHONPATH=/app
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '8004:8000'
+    volumes:
+      - ./evalinservice:/app
+    networks:
+      - asiste_network
+    restart: unless-stopped
+
+  kbservice:
+    build:
+      context: ./kbservice
+      dockerfile: Dockerfile
+    container_name: asiste_kbservice
+    environment:
+      - DATABASE_URL=postgresql://kbservice_user:kbservice_password@postgres:5432/asiste_db
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=your-secret-key-change-in-production
+      - PYTHONPATH=/app
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '8005:8000'
+    volumes:
+      - ./kbservice:/app
+    networks:
+      - asiste_network
+    restart: unless-stopped
+
+  aiservice:
+    build:
+      context: ./aiservice
+      dockerfile: Dockerfile
+    container_name: asiste_aiservice
+    environment:
+      - DATABASE_URL=postgresql://aiservice_user:aiservice_password@postgres:5432/asiste_db
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=your-secret-key-change-in-production
+      - PYTHONPATH=/app
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '8006:8000'
+    volumes:
+      - ./aiservice:/app
+    networks:
+      - asiste_network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: asiste_nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - userservice
+      - scheduleservice
+      - attendanceservice
+      - evalinservice
+      - kbservice
+      - aiservice
+    networks:
+      - asiste_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  asiste_network:
+    driver: bridge
