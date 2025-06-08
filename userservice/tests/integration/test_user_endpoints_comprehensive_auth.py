@@ -4,6 +4,7 @@ Incluye casos positivos y negativos para validar el comportamiento completo.
 """
 
 import pytest
+import asyncio
 import random
 from fastapi.testclient import TestClient
 
@@ -22,6 +23,9 @@ class TestUserEndpointsWithAuth:
         """Setup que se ejecuta antes de cada test"""
         # Inicializar helper de autenticación
         self.auth_helper = AuthTestHelper(client)
+        
+        # Crear admin usando el seeder antes de seed_database
+        asyncio.run(self.auth_helper.seed_admin_user())
         
         # Sembrar la base de datos con usuarios de test
         self.seeded_users = self.auth_helper.seed_database()
