@@ -7,8 +7,7 @@ import httpx
 from uuid import uuid4
 from fastapi.testclient import TestClient
 
-from app.main import app
-from app.infrastructure.config.database import get_db_session
+from main import app
 from app.domain.value_objects.user_role import UserRole
 
 
