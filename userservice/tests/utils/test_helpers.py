@@ -26,53 +26,53 @@ class AuthTestHelper:
         seed_users = {
             "admin": {
                 "email": f"admin.seed.{uuid.uuid4().hex[:8]}@test.com",
-                "password": "AdminSeedPass123!",
+                "password": "ChiefSecure123!",  # Evitar "admin" y "pass"
                 "data": {
                     "first_name": "Admin",
                     "last_name": "Seed", 
                     "email": f"admin.seed.{uuid.uuid4().hex[:8]}@test.com",
                     "document_number": f"{random.randint(10000000, 99999999)}",
                     "document_type": "CC",
-                    "password": "AdminSeedPass123!",
+                    "password": "ChiefSecure123!",
                     "role": UserRole.ADMIN.value
                 }
             },
             "administrative": {
                 "email": f"admin.staff.{uuid.uuid4().hex[:8]}@test.com",
-                "password": "AdminStaffPass123!",
+                "password": "StaffSecure123!",  # Evitar "admin" y "pass"
                 "data": {
                     "first_name": "Administrative",
                     "last_name": "Staff",
                     "email": f"admin.staff.{uuid.uuid4().hex[:8]}@test.com",
                     "document_number": f"{random.randint(20000000, 29999999)}",
                     "document_type": "CC",
-                    "password": "AdminStaffPass123!",
+                    "password": "StaffSecure123!",
                     "role": UserRole.ADMINISTRATIVE.value
                 }
             },
             "instructor": {
                 "email": f"instructor.seed.{uuid.uuid4().hex[:8]}@test.com",
-                "password": "InstructorSeedPass123!",
+                "password": "TeacherSecure123!",  # Evitar "pass"
                 "data": {
                     "first_name": "Instructor",
                     "last_name": "Seed",
                     "email": f"instructor.seed.{uuid.uuid4().hex[:8]}@test.com",
                     "document_number": f"{random.randint(30000000, 39999999)}",
                     "document_type": "CC",
-                    "password": "InstructorSeedPass123!",
+                    "password": "TeacherSecure123!",
                     "role": UserRole.INSTRUCTOR.value
                 }
             },
             "apprentice": {
                 "email": f"apprentice.seed.{uuid.uuid4().hex[:8]}@test.com",
-                "password": "ApprenticeSeedPass123!",
+                "password": "StudentSecure123!",  # Evitar "pass"
                 "data": {
                     "first_name": "Apprentice",
                     "last_name": "Seed",
                     "email": f"apprentice.seed.{uuid.uuid4().hex[:8]}@test.com",
                     "document_number": f"{random.randint(40000000, 49999999)}",
                     "document_type": "CC",
-                    "password": "ApprenticeSeedPass123!",
+                    "password": "StudentSecure123!",
                     "role": UserRole.APPRENTICE.value
                 }
             }

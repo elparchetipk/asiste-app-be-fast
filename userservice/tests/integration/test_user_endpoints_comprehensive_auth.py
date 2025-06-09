@@ -300,7 +300,7 @@ class TestUserEndpointsWithAuth:
         """Test cambiar contraseña exitosamente como ADMIN"""
         password_data = TestDataFactory.create_password_change_data(
             current_password=self.base_user_data["password"],
-            new_password="AdminChangedPass123!"
+            new_password="ChiefChangedSecure123!"  # Evitar "admin" y "pass"
         )
         
         admin_headers = self.auth_helper.get_admin_headers()
