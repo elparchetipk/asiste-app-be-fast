@@ -7,7 +7,7 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-from app.main import app
+from main import app
 from tests.utils.test_helpers import AuthTestHelper
 from app.domain.value_objects.user_role import UserRole
 
