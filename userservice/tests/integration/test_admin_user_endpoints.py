@@ -37,7 +37,7 @@ class TestAdminUserEndpoints:
             "document_number": "87654321",
             "document_type": "CC",
             "password": "TestUser123!",
-            "role": "APPRENTICE"
+            "role": "apprentice"
         }
         
         # Create the test user
@@ -134,7 +134,7 @@ class TestAdminUserEndpoints:
             "document_number": "11111111",
             "document_type": "CC",
             "password": "AnotherUser123!",
-            "role": "APPRENTICE"
+            "role": "apprentice"
         }
         
         response = self.client.post(
