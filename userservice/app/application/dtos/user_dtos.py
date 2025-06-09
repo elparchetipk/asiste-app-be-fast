@@ -80,6 +80,20 @@ class TokenResponseDTO:
     user: UserResponseDTO
 
 
+@dataclass
+class RefreshTokenDTO:
+    """DTO for token refresh request (HU-BE-003)."""
+    refresh_token: str
+
+
+@dataclass
+class RefreshTokenResponseDTO:
+    """DTO for token refresh response (HU-BE-003)."""
+    access_token: str
+    token_type: str
+    expires_in: int
+
+
 @dataclass(frozen=True)
 class UserListDTO:
     """DTO for paginated user list."""
