@@ -43,3 +43,10 @@ class TokenServiceInterface(ABC):
     def is_token_revoked(self, token: str) -> bool:
         """Check if a token has been revoked."""
         pass
+    
+    # PASO 5: Métodos adicionales para gestión de tokens
+    
+    @abstractmethod
+    def revoke_all_user_tokens(self, user_id: UUID, exclude_current: bool = False) -> None:
+        """Revoke all tokens for a specific user."""
+        pass

@@ -165,3 +165,18 @@ class UserRepositoryInterface(ABC):
             bool: True if user exists, False otherwise
         """
         pass
+
+    # PASO 5: Métodos adicionales para funcionalidades de autenticación críticas
+    
+    @abstractmethod
+    async def get_by_reset_token(self, reset_token: str) -> Optional[User]:
+        """
+        Retrieve a user by their password reset token.
+        
+        Args:
+            reset_token: Password reset token to search for
+            
+        Returns:
+            Optional[User]: User if found and token is valid, None otherwise
+        """
+        pass

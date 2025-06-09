@@ -1,6 +1,7 @@
 """Authentication use cases for user service."""
 
-from datetime import datetime
+import secrets
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from ...domain import (
@@ -11,9 +12,18 @@ from ...domain import (
     UserNotFoundError,
     UserInactiveError,
     InvalidPasswordError,
+    WeakPasswordError,
+    InvalidTokenError,
 )
-from ..interfaces import PasswordServiceInterface, TokenServiceInterface
-from ..dtos import LoginDTO, TokenResponseDTO, UserResponseDTO
+from ..interfaces import PasswordServiceInterface, TokenServiceInterface, EmailServiceInterface
+from ..dtos import (
+    LoginDTO, 
+    TokenResponseDTO, 
+    UserResponseDTO,
+    ForgotPasswordDTO,
+    ResetPasswordDTO,
+    ForceChangePasswordDTO,
+)
 
 
 class LoginUseCase:
@@ -150,43 +160,38 @@ class ForgotPasswordUseCase:
     def __init__(
         self,
         user_repository: UserRepositoryInterface,
-        # email_service: EmailServiceInterface,  # TODO: Implementar cuando esté disponible
+        email_service: EmailServiceInterface,
     ):
         self._user_repository = user_repository
-        # self._email_service = email_service
+        self._email_service = email_service
     
-    async def execute(self, forgot_password_data: "ForgotPasswordDTO") -> None:
-        """Execute forgot password request."""
-        from ..dtos import ForgotPasswordDTO
-        
-        # Validate email format
+    async def execute(self, request_data: ForgotPasswordDTO) -> None:
+        """Generate reset token and send email."""
         try:
-            email = Email(forgot_password_data.email)
+            email = Email(request_data.email)
         except Exception as e:
-            # Return success even for invalid emails (security)
+            # Por seguridad, no revelamos si el email existe o no
             return
         
         # Get user by email
         user = await self._user_repository.get_by_email(email.value)
         if not user or not user.is_active:
-            # Return success even if user doesn't exist (security)
+            # Por seguridad, no revelamos si el email existe o no
             return
         
-        # Generate secure reset token
-        import secrets
-        import string
-        from datetime import timedelta
+        # Generate secure reset token (24 hours expiration)
+        reset_token = secrets.token_urlsafe(32)
         
-        token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
-        expires_at = datetime.utcnow() + timedelta(hours=24)  # 24 hour expiration
-        
-        # Set reset token on user
-        user.set_reset_password_token(token, expires_at)
+        # Set reset token in user
+        user.set_password_reset_token(reset_token)
         await self._user_repository.update(user)
         
-        # TODO: Send email with reset link when email service is available
-        # reset_link = f"https://app.example.com/reset-password?token={token}"
-        # await self._email_service.send_password_reset_email(user.email.value, reset_link)
+        # Send email with reset link
+        await self._email_service.send_password_reset_email(
+            email=user.email.value,
+            reset_token=reset_token,
+            user_name=user.first_name
+        )
 
 
 class ResetPasswordUseCase:
@@ -202,36 +207,35 @@ class ResetPasswordUseCase:
         self._password_service = password_service
         self._token_service = token_service
     
-    async def execute(self, reset_data: "ResetPasswordDTO") -> None:
-        """Execute password reset with token."""
-        from ..dtos import ResetPasswordDTO
-        from ...domain.exceptions import InvalidTokenError
-        
+    async def execute(self, reset_data: ResetPasswordDTO) -> None:
+        """Reset password using valid token."""
         # Find user by reset token
         user = await self._user_repository.get_by_reset_token(reset_data.token)
         if not user:
             raise InvalidTokenError("Invalid or expired reset token")
         
-        # Validate token
-        if not user.is_reset_token_valid(reset_data.token):
-            raise InvalidTokenError("Invalid or expired reset token")
+        # Check if token is expired (24 hours)
+        if not user.is_reset_token_valid():
+            raise InvalidTokenError("Reset token has expired")
         
-        # Validate new password strength
+        # Validate new password
         if not self._password_service.is_password_strong(reset_data.new_password):
-            from ...domain.exceptions import WeakPasswordError
             raise WeakPasswordError("Password does not meet security requirements")
+        
+        # Check if new password is different from current
+        if self._password_service.verify_password(reset_data.new_password, user.hashed_password):
+            raise InvalidPasswordError("New password must be different from current password")
         
         # Hash new password
         new_hashed_password = self._password_service.hash_password(reset_data.new_password)
         
-        # Update user password and clear reset token
+        # Update password and clear reset token
         user.change_password(new_hashed_password)
-        user.clear_reset_password_token()
-        
-        # Revoke all existing refresh tokens for security
-        # self._token_service.revoke_all_user_tokens(user.id)  # TODO: Implement when available
-        
+        user.clear_password_reset_token()
         await self._user_repository.update(user)
+        
+        # Invalidate all existing refresh tokens for this user
+        self._token_service.revoke_all_user_tokens(user.id)
 
 
 class ForceChangePasswordUseCase:
@@ -247,39 +251,37 @@ class ForceChangePasswordUseCase:
         self._password_service = password_service
         self._token_service = token_service
     
-    async def execute(self, force_change_data: "ForceChangePasswordDTO") -> None:
-        """Execute forced password change."""
-        from ..dtos import ForceChangePasswordDTO
-        from ...domain.exceptions import WeakPasswordError
-        
+    async def execute(self, change_data: ForceChangePasswordDTO) -> None:
+        """Force password change for users with must_change_password flag."""
         # Get user
-        user = await self._user_repository.get_by_id(force_change_data.user_id)
+        user = await self._user_repository.get_by_id(change_data.user_id)
         if not user:
-            raise UserNotFoundError(str(force_change_data.user_id))
+            raise UserNotFoundError(str(change_data.user_id))
         
         # Check if user is active
         if not user.is_active:
             raise UserInactiveError(str(user.id))
         
-        # Verify user has must_change_password flag set
+        # Verify must_change_password flag
         if not user.must_change_password:
-            raise AuthenticationError("User is not required to change password")
+            raise InvalidPasswordError("User is not required to change password")
         
-        # Validate new password strength
-        if not self._password_service.is_password_strong(force_change_data.new_password):
+        # Validate new password
+        if not self._password_service.is_password_strong(change_data.new_password):
             raise WeakPasswordError("Password does not meet security requirements")
         
-        # Validate new password is different from current
-        if self._password_service.verify_password(force_change_data.new_password, user.hashed_password):
+        # Check if new password is different from current
+        if self._password_service.verify_password(change_data.new_password, user.hashed_password):
             raise InvalidPasswordError("New password must be different from current password")
         
         # Hash new password
-        new_hashed_password = self._password_service.hash_password(force_change_data.new_password)
+        new_hashed_password = self._password_service.hash_password(change_data.new_password)
         
-        # Force change password (sets must_change_password to False)
-        user.force_change_password(new_hashed_password)
-        
-        # Revoke all existing refresh tokens except current one for security
-        # self._token_service.revoke_all_user_tokens_except_current(user.id)  # TODO: Implement when available
-        
+        # Update password and clear must_change_password flag
+        user.change_password(new_hashed_password)
+        user.clear_must_change_password()
         await self._user_repository.update(user)
+        
+        # Invalidate all existing refresh tokens except current one
+        # (The user should remain logged in after forced change)
+        self._token_service.revoke_all_user_tokens(user.id, exclude_current=True)
