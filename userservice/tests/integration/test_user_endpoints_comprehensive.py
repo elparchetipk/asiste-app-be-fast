@@ -31,7 +31,7 @@ class TestUserEndpoints:
         
         # Crear el usuario para usar en tests usando admin headers
         admin_headers = self.auth_helper.get_admin_headers()
-        response = self.self.client.post("/users/", json=self.base_user_data, headers=admin_headers)
+        response = self.client.post("/users/", json=self.base_user_data, headers=admin_headers)
         if response.status_code == 201:
             self.created_user = response.json()
             self.user_id = self.created_user["id"]
