@@ -156,7 +156,20 @@ class AuthTestHelper:
                 
                 if admin_user:
                     print(f"✅ Usuario admin creado para testing: {admin_data['email']}")
-                    return True
+                    
+                    # Obtener token de autenticación para el admin recién creado
+                    admin_token = self.get_auth_token(
+                        admin_data["email"], 
+                        admin_data["password"]
+                    )
+                    
+                    if admin_token:
+                        self._user_tokens["admin"] = admin_token
+                        print(f"✅ Token de admin obtenido y guardado")
+                        return True
+                    else:
+                        print(f"❌ No se pudo obtener token para admin: {admin_data['email']}")
+                        return False
                 break
                 
         except Exception as e:
