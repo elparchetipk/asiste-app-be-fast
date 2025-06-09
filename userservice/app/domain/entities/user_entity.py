@@ -18,9 +18,11 @@ class User:
     id: uuid.UUID = field(default_factory=uuid.uuid4)
     is_active: bool = True
     must_change_password: bool = True
+    phone: str | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
     last_login_at: datetime | None = None
+    deleted_at: datetime | None = None
 
     def __post_init__(self):
         if not self.first_name or not self.first_name.strip():

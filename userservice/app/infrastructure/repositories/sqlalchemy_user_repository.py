@@ -35,9 +35,11 @@ class SQLAlchemyUserRepository(UserRepositoryInterface):
             role=model.role,
             is_active=model.is_active,
             must_change_password=model.must_change_password,
+            phone=model.phone,
             created_at=model.created_at,
             updated_at=model.updated_at,
             last_login_at=model.last_login_at,
+            deleted_at=model.deleted_at,
         )
     
     def _entity_to_model(self, entity: User) -> UserModel:
@@ -53,9 +55,11 @@ class SQLAlchemyUserRepository(UserRepositoryInterface):
             role=entity.role,
             is_active=entity.is_active,
             must_change_password=entity.must_change_password,
+            phone=entity.phone,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
             last_login_at=entity.last_login_at,
+            deleted_at=entity.deleted_at,
         )
     
     async def create(self, user: User) -> User:

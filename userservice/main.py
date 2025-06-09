@@ -181,8 +181,9 @@ async def health_check():
 
 
 # Include routers
-app.include_router(auth_router)
-app.include_router(user_router)
+app.include_router(auth_router, prefix="/api/v1")
+app.include_router(user_router, prefix="/api/v1")
+app.include_router(admin_user_router, prefix="/api/v1")
 
 
 # Root endpoint
