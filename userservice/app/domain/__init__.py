@@ -12,6 +12,8 @@ from .exceptions import (
     AuthenticationError,
     AuthorizationError,
     UserSessionError,
+    InvalidTokenError,
+    WeakPasswordError,
 )
 from .repositories import UserRepositoryInterface
 
@@ -33,6 +35,8 @@ __all__ = [
     "AuthenticationError",
     "AuthorizationError",
     "UserSessionError",
+    "InvalidTokenError",
+    "WeakPasswordError",
     # Repositories
     "UserRepositoryInterface",
 ]
