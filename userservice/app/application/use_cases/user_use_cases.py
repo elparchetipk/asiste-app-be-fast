@@ -9,6 +9,7 @@ from ...domain import (
     UserRole,
     Email,
     DocumentNumber,
+    DocumentType,
     UserNotFoundError,
     UserAlreadyExistsError,
     InvalidPasswordError,
