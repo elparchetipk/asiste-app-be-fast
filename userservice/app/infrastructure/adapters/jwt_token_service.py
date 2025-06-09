@@ -92,3 +92,33 @@ class JWTTokenService(TokenServiceInterface):
     def is_token_revoked(self, token: str) -> bool:
         """Check if a token has been revoked."""
         return token in self._revoked_tokens
+    
+    def revoke_all_user_tokens(self, user_id: UUID, exclude_current: bool = False) -> None:
+        """
+        Revoke all tokens for a specific user.
+        
+        In a production environment, this would typically:
+        1. Update a blacklist in Redis/database with user_id and timestamp
+        2. When validating tokens, check if token.iat < blacklist.timestamp
+        
+        For now, we'll use a simple in-memory approach.
+        """
+        # In production, this would be implemented with Redis:
+        # redis.set(f"user_blacklist:{user_id}", datetime.utcnow().timestamp())
+        # 
+        # For development, we'll track revoked user IDs with timestamps
+        if not hasattr(self, '_revoked_users'):
+            self._revoked_users = {}
+        
+        self._revoked_users[str(user_id)] = datetime.utcnow().timestamp()
+    
+    def is_user_token_revoked(self, user_id: UUID, token_issued_at: datetime) -> bool:
+        """Check if a user's token was revoked after it was issued."""
+        if not hasattr(self, '_revoked_users'):
+            return False
+            
+        user_blacklist_time = self._revoked_users.get(str(user_id))
+        if not user_blacklist_time:
+            return False
+            
+        return token_issued_at.timestamp() < user_blacklist_time
