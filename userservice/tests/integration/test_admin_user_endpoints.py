@@ -30,11 +30,13 @@ class TestAdminUserEndpoints:
         self.admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
         
         # Create test user for admin operations
+        import uuid
+        unique_suffix = str(uuid.uuid4())[:8]
         self.test_user_data = {
             "first_name": "Test",
             "last_name": "User",
-            "email": "test.user@example.com",
-            "document_number": "87654321",
+            "email": f"test.user.{unique_suffix}@example.com",
+            "document_number": f"8765{unique_suffix[:4]}",
             "document_type": "CC",
             "password": "TestUser123!",
             "role": "apprentice"
@@ -325,8 +327,10 @@ class TestAdminUserEndpointsIntegration:
         """Test complete workflow: create -> get -> update -> delete."""
         # 1. Create user via bulk upload
         import base64
+        import uuid
         
-        csv_content = "first_name,last_name,email,document_number,document_type,role\\nWorkflow,Test,workflow.test@example.com,99999999,CC,apprentice"
+        unique_suffix = str(uuid.uuid4())[:8]
+        csv_content = f"first_name,last_name,email,document_number,document_type,role\\nWorkflow,Test,workflow.test.{unique_suffix}@example.com,999{unique_suffix[:5]},CC,apprentice"
         encoded_content = base64.b64encode(csv_content.encode('utf-8')).decode('utf-8')
         
         upload_response = self.client.post(
@@ -349,7 +353,7 @@ class TestAdminUserEndpointsIntegration:
         
         assert get_response.status_code == 200
         user_data = get_response.json()
-        assert user_data["email"] == "workflow.test@example.com"
+        assert f"workflow.test.{unique_suffix}@example.com" in user_data["email"]
         
         # 3. Update user
         update_response = self.client.put(
