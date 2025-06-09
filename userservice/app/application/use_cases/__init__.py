@@ -4,6 +4,10 @@ from .auth_use_cases import (
     LoginUseCase,
     LogoutUseCase,
     ValidateTokenUseCase,
+    # PASO 5: Critical auth use cases
+    ForgotPasswordUseCase,
+    ResetPasswordUseCase,
+    ForceChangePasswordUseCase,
 )
 
 from .user_use_cases import (
@@ -26,6 +30,10 @@ __all__ = [
     "LoginUseCase",
     "LogoutUseCase",
     "ValidateTokenUseCase",
+    # PASO 5: Critical auth use cases
+    "ForgotPasswordUseCase",
+    "ResetPasswordUseCase",
+    "ForceChangePasswordUseCase",
     # User use cases
     "CreateUserUseCase",
     "GetUserByIdUseCase",

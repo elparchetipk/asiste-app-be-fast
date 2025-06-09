@@ -15,6 +15,10 @@ from .user_dtos import (
     BulkUploadUserDTO,
     BulkUploadResultDTO,
     DeleteUserResultDTO,
+    # PASO 5: Auth Critical DTOs
+    ForgotPasswordDTO,
+    ResetPasswordDTO,
+    ForceChangePasswordDTO,
 )
 
 __all__ = [
@@ -32,4 +36,8 @@ __all__ = [
     "BulkUploadUserDTO",
     "BulkUploadResultDTO",
     "DeleteUserResultDTO",
+    # PASO 5: Auth Critical DTOs
+    "ForgotPasswordDTO",
+    "ResetPasswordDTO",
+    "ForceChangePasswordDTO",
 ]
