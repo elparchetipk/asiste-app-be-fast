@@ -7,14 +7,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from sqlalchemy import text
-from app.infrastructure.database.connection import get_session
+from app.infrastructure.config.database import get_db_session
 
 async def test_table_creation():
     """Verificar que la tabla users existe"""
     print("🔍 Verificando creación de tablas...")
     
     # Obtener sesión de base de datos
-    async for session in get_session():
+    async for session in get_db_session():
         try:
             # Verificar que la tabla users existe
             result = await session.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='users'"))
