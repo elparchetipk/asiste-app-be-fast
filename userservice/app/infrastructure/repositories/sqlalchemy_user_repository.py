@@ -115,6 +115,8 @@ class SQLAlchemyUserRepository(UserRepositoryInterface):
         model.must_change_password = user.must_change_password
         model.updated_at = user.updated_at
         model.last_login_at = user.last_login_at
+        model.deleted_at = user.deleted_at  # PASO 4: Soft delete support
+        model.phone = user.phone  # PASO 4: Additional user field
         
         await self._session.flush()
         await self._session.refresh(model)
