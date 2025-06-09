@@ -94,6 +94,52 @@ class ChangePasswordRequest(BaseModel):
     )
 
 
+# PASO 5: Schemas para funcionalidades de autenticación críticas
+
+class ForgotPasswordRequest(BaseModel):
+    """Schema for requesting password reset."""
+    
+    email: EmailStr = Field(..., description="User's email address for password reset")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "email": "user@example.com"
+            }
+        }
+    )
+
+
+class ResetPasswordRequest(BaseModel):
+    """Schema for resetting password with token (HU-BE-006)."""
+    
+    token: str = Field(..., min_length=1, description="Password reset token")
+    new_password: str = Field(..., min_length=10, max_length=100, description="New secure password")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "token": "abc123def456789reset",
+                "new_password": "NewSecurePass456!"
+            }
+        }
+    )
+
+
+class ForceChangePasswordRequest(BaseModel):
+    """Schema for forced password change (HU-BE-007)."""
+    
+    new_password: str = Field(..., min_length=10, max_length=100, description="New secure password")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "new_password": "NewSecurePass456!"
+            }
+        }
+    )
+
+
 class RefreshTokenRequest(BaseModel):
     """Schema for refresh token request."""
     

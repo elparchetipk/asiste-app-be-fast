@@ -101,6 +101,31 @@ class UserFilterDTO:
     document_type: Optional[DocumentType] = None
 
 
+# PASO 5: DTOs para funcionalidades de autenticación críticas
+
+@dataclass(frozen=True)
+class ForgotPasswordDTO:
+    """DTO for requesting password reset."""
+    
+    email: str
+
+
+@dataclass(frozen=True)
+class ResetPasswordDTO:
+    """DTO for resetting password with token (HU-BE-006)."""
+    
+    token: str
+    new_password: str
+
+
+@dataclass(frozen=True)
+class ForceChangePasswordDTO:
+    """DTO for forced password change (HU-BE-007)."""
+    
+    user_id: UUID
+    new_password: str
+
+
 # PASO 4: DTOs para administración avanzada de usuarios
 
 @dataclass(frozen=True)
