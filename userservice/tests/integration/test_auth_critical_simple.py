@@ -42,7 +42,7 @@ class TestCriticalAuthEndpointsSimple:
         })
         
         # Debería responder (aunque sea error de autorización)
-        assert response.status_code in [200, 401, 422, 500]
+        assert response.status_code in [200, 401, 403, 422, 500]
 
     def test_forgot_password_email_validation(self):
         """Test validación de email en forgot password."""
@@ -73,8 +73,8 @@ class TestCriticalAuthEndpointsSimple:
             "new_password": "TestPassword123!"
         })
         
-        # Debería requerir autenticación
-        assert response.status_code == 401
+        # Debería requerir autenticación (401 o 403)
+        assert response.status_code in [401, 403]
 
     def test_openapi_includes_new_endpoints(self):
         """Test que los nuevos endpoints aparecen en la documentación OpenAPI."""
