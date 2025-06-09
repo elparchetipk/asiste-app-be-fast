@@ -239,3 +239,116 @@ async def validate_token(
 #             status_code=status.HTTP_404_NOT_FOUND,
 #             detail=str(e)
 #         )
+
+
+# PASO 5: Endpoints para funcionalidades de autenticación críticas
+
+@router.post("/forgot-password", response_model=MessageResponse)
+async def forgot_password(
+    request: ForgotPasswordRequest,
+    forgot_password_use_case: Annotated[ForgotPasswordUseCase, Depends(get_forgot_password_use_case)]
+):
+    """
+    Solicitar restablecimiento de contraseña (HU-BE-005).
+    
+    - **email**: Email del usuario para enviar instrucciones de restablecimiento
+    """
+    try:
+        dto = ForgotPasswordDTO(email=request.email)
+        await forgot_password_use_case.execute(dto)
+        return MessageResponse(
+            message="Si el email existe en nuestro sistema, recibirás instrucciones para restablecer tu contraseña"
+        )
+    except Exception:
+        # Por seguridad, siempre retornamos el mismo mensaje
+        return MessageResponse(
+            message="Si el email existe en nuestro sistema, recibirás instrucciones para restablecer tu contraseña"
+        )
+
+
+@router.post("/reset-password", response_model=MessageResponse)
+async def reset_password(
+    request: ResetPasswordRequest,
+    reset_password_use_case: Annotated[ResetPasswordUseCase, Depends(get_reset_password_use_case)]
+):
+    """
+    Restablecer contraseña con token (HU-BE-006).
+    
+    - **token**: Token de restablecimiento recibido por email
+    - **new_password**: Nueva contraseña que cumple requisitos de seguridad
+    """
+    try:
+        dto = ResetPasswordDTO(
+            token=request.token,
+            new_password=request.new_password
+        )
+        await reset_password_use_case.execute(dto)
+        return MessageResponse(message="Contraseña restablecida exitosamente")
+    
+    except InvalidTokenError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except WeakPasswordError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except InvalidPasswordError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor"
+        )
+
+
+@router.post("/force-change-password", response_model=MessageResponse)
+async def force_change_password(
+    request: ForceChangePasswordRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
+    force_change_password_use_case: Annotated[ForceChangePasswordUseCase, Depends(get_force_change_password_use_case)]
+):
+    """
+    Cambio forzado de contraseña (HU-BE-007).
+    Requerido para usuarios con flag must_change_password = true.
+    
+    - **new_password**: Nueva contraseña que cumple requisitos de seguridad
+    """
+    try:
+        dto = ForceChangePasswordDTO(
+            user_id=current_user.id,
+            new_password=request.new_password
+        )
+        await force_change_password_use_case.execute(dto)
+        return MessageResponse(message="Contraseña cambiada exitosamente")
+    
+    except UserNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except UserInactiveError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e)
+        )
+    except InvalidPasswordError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except WeakPasswordError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor"
+        )
