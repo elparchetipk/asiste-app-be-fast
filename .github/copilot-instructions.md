@@ -17,3 +17,4 @@
 - siempre ejecuta tareas pequeñas(atómicas), es mejor una tarea pequeña terminada, que tratar de completar 100 a la vez y fallar en el intento
 - sigue estrictamente la priorización del desarrollo de funcionalidades y tareas que se ha definido en el proyecto, no te saltes ninguna tarea, ni la priorices por encima de otra.
 - Si tienes dudas, pregunta. No asumas nada.
+- no tocar carpeta _docs/tmp ni su contenido, es temporal y no se debe modificar.
