@@ -225,11 +225,13 @@ class TestAdminUserEndpoints:
     def test_bulk_upload_users_success(self):
         """Test HU-BE-016: POST /api/v1/admin/users/upload - Carga masiva CSV."""
         import base64
+        import uuid
         
-        # Create CSV content
-        csv_content = """first_name,last_name,email,document_number,document_type,role,phone
-Maria,Garcia,maria.garcia@example.com,22222222,CC,instructor,+573001234567
-Carlos,Lopez,carlos.lopez@example.com,33333333,CC,apprentice,+573007654321"""
+        # Create CSV content with unique emails
+        suffix = str(uuid.uuid4())[:8]
+        csv_content = f"""first_name,last_name,email,document_number,document_type,role,phone
+Maria,Garcia,maria.garcia.{suffix}@example.com,22222{suffix[:3]},CC,instructor,+573001234567
+Carlos,Lopez,carlos.lopez.{suffix}@example.com,33333{suffix[:3]},CC,apprentice,+573007654321"""
         
         # Encode to base64
         encoded_content = base64.b64encode(csv_content.encode('utf-8')).decode('utf-8')
