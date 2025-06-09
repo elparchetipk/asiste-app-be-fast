@@ -4,27 +4,34 @@ import pytest
 import random
 from fastapi.testclient import TestClient
 from main import app
+from tests.utils.test_helpers import AuthTestHelper, TestDataFactory
+from app.domain.value_objects.user_role import UserRole
 
-client = TestClient(app)
 
 class TestUserEndpoints:
     """Suite de tests para todos los endpoints de usuarios"""
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    async def setup_test_environment(self, test_client, db_tables_ready):
         """Setup que se ejecuta antes de cada test"""
-        # Crear un usuario base para tests que lo requieran
-        self.base_user_data = {
-            "email": f"testuser-{random.randint(100000, 999999)}@test.com",
-            "password": "SecurePass123!",
-            "first_name": "Test",
-            "last_name": "User",
-            "document_number": f"{random.randint(10000000, 99999999)}",
-            "document_type": "CC",
-            "role": "apprentice"
-        }
+        # Usar el cliente de test del fixture
+        self.client = test_client
         
-        # Crear el usuario para usar en tests
-        response = client.post("/users/", json=self.base_user_data)
+        # Inicializar helper de autenticación
+        self.auth_helper = AuthTestHelper(self.client)
+        
+        # Crear admin usando el seeder
+        await self.auth_helper.seed_admin_user()
+        
+        # Crear un usuario base para tests que lo requieran
+        self.base_user_data = TestDataFactory.create_user_data(
+            role=UserRole.APPRENTICE,
+            prefix="testbase"
+        )
+        
+        # Crear el usuario para usar en tests usando admin headers
+        admin_headers = self.auth_helper.get_admin_headers()
+        response = self.client.post("/users/", json=self.base_user_data, headers=admin_headers)
         if response.status_code == 201:
             self.created_user = response.json()
             self.user_id = self.created_user["id"]

@@ -53,7 +53,7 @@ class TestJWTAuthenticationFunctional:
 
     def get_auth_token(self, email: str, password: str) -> str:
         """Obtener token de autenticación."""
-        login_response = client.post("/auth/login", json={
+        login_response = self.client.post("/auth/login", json={
             "username": email,
             "password": password
         })
@@ -82,7 +82,7 @@ class TestJWTAuthenticationFunctional:
             "role": UserRole.APPRENTICE.value
         }
         
-        response = client.post("/users/", json=new_user_data, headers=headers)
+        response = self.client.post("/users/", json=new_user_data, headers=headers)
         assert response.status_code == 201
         
         created_user = response.json()
@@ -94,7 +94,7 @@ class TestJWTAuthenticationFunctional:
         admin_token = self.get_auth_token(self.admin_email, self.admin_password)
         headers = self.get_auth_headers(admin_token)
         
-        response = client.get("/users/", headers=headers)
+        response = self.client.get("/users/", headers=headers)
         assert response.status_code == 200
         
         users_data = response.json()
@@ -107,7 +107,7 @@ class TestJWTAuthenticationFunctional:
         admin_token = self.get_auth_token(self.admin_email, self.admin_password)
         headers = self.get_auth_headers(admin_token)
         
-        response = client.get(f"/users/{self.instructor_user_id}", headers=headers)
+        response = self.client.get(f"/users/{self.instructor_user_id}", headers=headers)
         assert response.status_code == 200
         
         user_data = response.json()
@@ -119,12 +119,12 @@ class TestJWTAuthenticationFunctional:
         headers = self.get_auth_headers(admin_token)
         
         # Desactivar usuario
-        response = client.patch(f"/users/{self.apprentice_user_id}/deactivate", headers=headers)
+        response = self.client.patch(f"/users/{self.apprentice_user_id}/deactivate", headers=headers)
         assert response.status_code == 200
         assert not response.json()["is_active"]
         
         # Activar usuario
-        response = client.patch(f"/users/{self.apprentice_user_id}/activate", headers=headers)
+        response = self.client.patch(f"/users/{self.apprentice_user_id}/activate", headers=headers)
         assert response.status_code == 200
         assert response.json()["is_active"]
 
@@ -134,11 +134,11 @@ class TestJWTAuthenticationFunctional:
         headers = self.get_auth_headers(instructor_token)
         
         # Listar usuarios
-        response = client.get("/users/", headers=headers)
+        response = self.client.get("/users/", headers=headers)
         assert response.status_code == 200
         
         # Ver usuario específico
-        response = client.get(f"/users/{self.apprentice_user_id}", headers=headers)
+        response = self.client.get(f"/users/{self.apprentice_user_id}", headers=headers)
         assert response.status_code == 200
 
     def test_instructor_cannot_create_users(self):
@@ -156,7 +156,7 @@ class TestJWTAuthenticationFunctional:
             "role": UserRole.APPRENTICE.value
         }
         
-        response = client.post("/users/", json=new_user_data, headers=headers)
+        response = self.client.post("/users/", json=new_user_data, headers=headers)
         assert response.status_code == 403
 
     def test_instructor_cannot_activate_deactivate_users(self):
@@ -165,11 +165,11 @@ class TestJWTAuthenticationFunctional:
         headers = self.get_auth_headers(instructor_token)
         
         # Intentar desactivar usuario
-        response = client.patch(f"/users/{self.apprentice_user_id}/deactivate", headers=headers)
+        response = self.client.patch(f"/users/{self.apprentice_user_id}/deactivate", headers=headers)
         assert response.status_code == 403
         
         # Intentar activar usuario
-        response = client.patch(f"/users/{self.apprentice_user_id}/activate", headers=headers)
+        response = self.client.patch(f"/users/{self.apprentice_user_id}/activate", headers=headers)
         assert response.status_code == 403
 
     def test_apprentice_cannot_access_user_management(self):
@@ -178,11 +178,11 @@ class TestJWTAuthenticationFunctional:
         headers = self.get_auth_headers(apprentice_token)
         
         # No puede listar usuarios
-        response = client.get("/users/", headers=headers)
+        response = self.client.get("/users/", headers=headers)
         assert response.status_code == 403
         
         # No puede ver usuarios específicos
-        response = client.get(f"/users/{self.admin_user_id}", headers=headers)
+        response = self.client.get(f"/users/{self.admin_user_id}", headers=headers)
         assert response.status_code == 403
         
         # No puede crear usuarios
@@ -196,7 +196,7 @@ class TestJWTAuthenticationFunctional:
             "role": UserRole.APPRENTICE.value
         }
         
-        response = client.post("/users/", json=new_user_data, headers=headers)
+        response = self.client.post("/users/", json=new_user_data, headers=headers)
         assert response.status_code == 403
 
     def test_users_can_change_own_password(self):
@@ -210,7 +210,7 @@ class TestJWTAuthenticationFunctional:
             "new_password": "NewApprenticePass123!"
         }
         
-        response = client.patch(f"/users/{self.apprentice_user_id}/change-password", 
+        response = self.client.patch(f"/users/{self.apprentice_user_id}/change-password", 
                               json=password_data, headers=headers)
         assert response.status_code == 200
         
@@ -229,7 +229,7 @@ class TestJWTAuthenticationFunctional:
         }
         
         # Intentar cambiar contraseña de otro usuario
-        response = client.patch(f"/users/{self.instructor_user_id}/change-password", 
+        response = self.client.patch(f"/users/{self.instructor_user_id}/change-password", 
                               json=password_data, headers=headers)
         assert response.status_code == 403
 
@@ -243,7 +243,7 @@ class TestJWTAuthenticationFunctional:
             "new_password": "NewInstructorPass123!"
         }
         
-        response = client.patch(f"/users/{self.instructor_user_id}/change-password", 
+        response = self.client.patch(f"/users/{self.instructor_user_id}/change-password", 
                               json=password_data, headers=headers)
         assert response.status_code == 200
 
