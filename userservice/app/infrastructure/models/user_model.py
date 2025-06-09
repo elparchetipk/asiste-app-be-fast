@@ -26,11 +26,11 @@ class UserModel(Base):
     role = Column(Enum(UserRole), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     must_change_password = Column(Boolean, default=True, nullable=False)
-    phone = Column(String(20), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     last_login_at = Column(DateTime, nullable=True)
-    deleted_at = Column(DateTime, nullable=True)
+    deleted_at = Column(DateTime, nullable=True)  # PASO 4: Soft delete support
+    phone = Column(String(20), nullable=True)  # PASO 4: Additional user field
     
     def __repr__(self):
         return f"<UserModel(id={self.id}, email={self.email}, role={self.role})>"

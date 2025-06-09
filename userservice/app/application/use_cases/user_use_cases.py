@@ -391,14 +391,14 @@ class GetUserDetailUseCase:
             email=user.email.value,
             document_number=user.document_number.value,
             document_type=user.document_number.document_type.value,
-            phone=getattr(user, 'phone', None),
+            phone=user.phone,
             role=user.role.value,
             is_active=user.is_active,
             must_change_password=user.must_change_password,
             created_at=user.created_at,
             updated_at=user.updated_at,
             last_login_at=user.last_login_at,
-            deleted_at=getattr(user, 'deleted_at', None),
+            deleted_at=user.deleted_at,
         )
 
 
@@ -483,14 +483,14 @@ class AdminUpdateUserUseCase:
             email=updated_user.email.value,
             document_number=updated_user.document_number.value,
             document_type=updated_user.document_number.document_type.value,
-            phone=getattr(updated_user, 'phone', None),
+            phone=updated_user.phone,
             role=updated_user.role.value,
             is_active=updated_user.is_active,
             must_change_password=updated_user.must_change_password,
             created_at=updated_user.created_at,
             updated_at=updated_user.updated_at,
             last_login_at=updated_user.last_login_at,
-            deleted_at=getattr(updated_user, 'deleted_at', None),
+            deleted_at=updated_user.deleted_at,
         )
 
 
@@ -519,8 +519,7 @@ class DeleteUserUseCase:
             raise UserNotFoundError(str(user_id))
         
         # Perform soft delete
-        user.deactivate()
-        user.deleted_at = datetime.utcnow()
+        user.soft_delete()
         
         # Save changes
         updated_user = await self._user_repository.update(user)

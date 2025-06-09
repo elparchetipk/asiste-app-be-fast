@@ -18,11 +18,11 @@ class User:
     id: uuid.UUID = field(default_factory=uuid.uuid4)
     is_active: bool = True
     must_change_password: bool = True
-    phone: str | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
     last_login_at: datetime | None = None
-    deleted_at: datetime | None = None
+    deleted_at: datetime | None = None  # PASO 4: Soft delete support
+    phone: str | None = None  # PASO 4: Additional user field
 
     def __post_init__(self):
         if not self.first_name or not self.first_name.strip():
@@ -66,6 +66,12 @@ class User:
 
     def deactivate(self):
         self.is_active = False
+        self.updated_at = datetime.utcnow()
+    
+    def soft_delete(self):
+        """Mark user as deleted (soft delete)."""
+        self.is_active = False
+        self.deleted_at = datetime.utcnow()
         self.updated_at = datetime.utcnow()
         
     def record_login(self):

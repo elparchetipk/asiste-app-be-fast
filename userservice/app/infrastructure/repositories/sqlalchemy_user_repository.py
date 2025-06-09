@@ -55,11 +55,9 @@ class SQLAlchemyUserRepository(UserRepositoryInterface):
             role=entity.role,
             is_active=entity.is_active,
             must_change_password=entity.must_change_password,
-            phone=entity.phone,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
             last_login_at=entity.last_login_at,
-            deleted_at=entity.deleted_at,
         )
     
     async def create(self, user: User) -> User:
