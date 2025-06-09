@@ -10,6 +10,8 @@ from .user_exceptions import (
     AuthenticationError,
     AuthorizationError,
     UserSessionError,
+    InvalidTokenError,
+    WeakPasswordError,
 )
 
 __all__ = [
@@ -22,4 +24,6 @@ __all__ = [
     "AuthenticationError",
     "AuthorizationError",
     "UserSessionError",
+    "InvalidTokenError",
+    "WeakPasswordError",
 ]
