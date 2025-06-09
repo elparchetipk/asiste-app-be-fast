@@ -17,7 +17,9 @@ def test_seed_users_validation():
     print("🧪 Probando validación de contraseñas de usuarios seed...")
     
     password_service = BcryptPasswordService()
-    auth_helper = AuthTestHelper()
+    
+    # Crear un AuthTestHelper ficticio para solo validar las contraseñas
+    auth_helper = AuthTestHelper(client=None)  # Solo para crear seed users
     
     # Crear usuarios seed
     seed_users = auth_helper.create_seed_users()
