@@ -22,6 +22,12 @@ from ..dtos import (
     UserResponseDTO,
     UserListDTO,
     UserFilterDTO,
+    # PASO 4: Admin DTOs
+    AdminUpdateUserDTO,
+    UserDetailDTO,
+    BulkUploadUserDTO,
+    BulkUploadResultDTO,
+    DeleteUserResultDTO,
 )
 
 
@@ -553,12 +559,11 @@ class BulkUploadUsersUseCase:
         self._password_service = password_service
         self._email_service = email_service
     
-    async def execute(self, csv_content: str) -> "BulkUploadResultDTO":
+    async def execute(self, csv_content: str) -> BulkUploadResultDTO:
         """Process bulk user upload from CSV content."""
         import csv
         import io
         import base64
-        from ..dtos import BulkUploadResultDTO, BulkUploadUserDTO
         
         total_processed = 0
         successful = 0
