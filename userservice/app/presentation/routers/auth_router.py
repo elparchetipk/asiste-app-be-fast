@@ -8,6 +8,9 @@ from app.dependencies import (
     get_logout_use_case,
     get_validate_token_use_case,
     # get_change_password_use_case
+    get_forgot_password_use_case,
+    get_reset_password_use_case,
+    get_force_change_password_use_case,
 )
 from app.application.use_cases.auth_use_cases import (
     LoginUseCase,
@@ -15,16 +18,25 @@ from app.application.use_cases.auth_use_cases import (
     LogoutUseCase,
     ValidateTokenUseCase,
     # ChangePasswordUseCase
+    ForgotPasswordUseCase,
+    ResetPasswordUseCase,
+    ForceChangePasswordUseCase,
 )
 from app.application.dtos.user_dtos import (
     LoginDTO,
     TokenResponseDTO,
+    ForgotPasswordDTO,
+    ResetPasswordDTO,
+    ForceChangePasswordDTO,
 )
 from app.presentation.schemas.user_schemas import (
     LoginRequest,
     LoginResponse,
     MessageResponse,
-    UserResponse
+    UserResponse,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+    ForceChangePasswordRequest,
 )
 from app.presentation.dependencies.auth import get_current_user, get_current_active_user
 from app.domain.entities.user_entity import User
@@ -32,7 +44,9 @@ from app.domain.exceptions.user_exceptions import (
     AuthenticationError,
     UserNotFoundError,
     InvalidTokenError,
-    WeakPasswordError
+    WeakPasswordError,
+    UserInactiveError,
+    InvalidPasswordError,
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])

@@ -217,3 +217,13 @@ class SQLAlchemyUserRepository(UserRepositoryInterface):
         )
         count = result.scalar()
         return count > 0
+
+    # PASO 5: Métodos adicionales para funcionalidades de autenticación críticas
+    
+    async def get_by_reset_token(self, reset_token: str) -> Optional[User]:
+        """Get user by password reset token."""
+        result = await self._session.execute(
+            select(UserModel).where(UserModel.password_reset_token == reset_token)
+        )
+        model = result.scalar_one_or_none()
+        return self._model_to_entity(model) if model else None

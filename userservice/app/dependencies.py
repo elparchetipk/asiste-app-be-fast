@@ -22,6 +22,9 @@ from app.application.use_cases.auth_use_cases import (
     LogoutUseCase,
     ValidateTokenUseCase,
     # ChangePasswordUseCase
+    ForgotPasswordUseCase,
+    ResetPasswordUseCase,
+    ForceChangePasswordUseCase,
 )
 from app.application.use_cases.user_use_cases import (
     CreateUserUseCase,
@@ -216,3 +219,31 @@ def get_bulk_upload_users_use_case(
 ) -> BulkUploadUsersUseCase:
     """Get bulk upload users use case instance."""
     return BulkUploadUsersUseCase(user_repository, password_service, email_service)
+
+
+# PASO 5: Dependencias para funcionalidades de autenticación críticas
+
+def get_forgot_password_use_case(
+    user_repository: UserRepositoryInterface = Depends(get_user_repository),
+    email_service: EmailServiceInterface = Depends(get_email_service)
+) -> ForgotPasswordUseCase:
+    """Get forgot password use case instance."""
+    return ForgotPasswordUseCase(user_repository, email_service)
+
+
+def get_reset_password_use_case(
+    user_repository: UserRepositoryInterface = Depends(get_user_repository),
+    password_service: PasswordServiceInterface = Depends(get_password_service),
+    token_service: TokenServiceInterface = Depends(get_token_service)
+) -> ResetPasswordUseCase:
+    """Get reset password use case instance."""
+    return ResetPasswordUseCase(user_repository, password_service, token_service)
+
+
+def get_force_change_password_use_case(
+    user_repository: UserRepositoryInterface = Depends(get_user_repository),
+    password_service: PasswordServiceInterface = Depends(get_password_service),
+    token_service: TokenServiceInterface = Depends(get_token_service)
+) -> ForceChangePasswordUseCase:
+    """Get force change password use case instance."""
+    return ForceChangePasswordUseCase(user_repository, password_service, token_service)
