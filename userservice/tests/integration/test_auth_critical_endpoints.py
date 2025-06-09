@@ -9,7 +9,7 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.main import app
+from main import app
 from app.infrastructure.adapters.bcrypt_password_service import BcryptPasswordService
 from app.domain.entities.user_entity import User
 from app.domain.value_objects.email import Email
