@@ -74,9 +74,11 @@ class BcryptPasswordService(PasswordServiceInterface):
             r'123456',           # Sequential numbers
             r'abcdef',           # Sequential letters
             r'qwerty',           # Common keyboard patterns
-            r'password',         # Common words
-            r'admin',
-            r'user',
+            r'^password\d*$',    # Starts with "password" optionally followed by digits
+            r'^admin\d*$',       # Starts with "admin" optionally followed by digits
+            r'^user\d*$',        # Starts with "user" optionally followed by digits
+            r'^test\d*$',        # Starts with "test" optionally followed by digits
+            r'^\d+$',            # Only digits
         ]
         
         password_lower = password.lower()
