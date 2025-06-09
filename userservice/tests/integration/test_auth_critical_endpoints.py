@@ -16,7 +16,7 @@ from app.domain.value_objects.email import Email
 from app.domain.value_objects.document_number import DocumentNumber
 from app.domain.value_objects.document_type import DocumentType
 from app.domain.value_objects.user_role import UserRole
-from tests.utils.admin_seeder import AdminSeeder
+from app.infrastructure.seeders.admin_seeder import AdminSeeder
 
 
 class TestCriticalAuthEndpoints:
