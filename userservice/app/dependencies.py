@@ -31,6 +31,11 @@ from app.application.use_cases.user_use_cases import (
     ActivateUserUseCase,
     DeactivateUserUseCase,
     ListUsersUseCase,
+    # PASO 4: Nuevos casos de uso para administración avanzada
+    GetUserDetailUseCase,
+    AdminUpdateUserUseCase,
+    DeleteUserUseCase,
+    BulkUploadUsersUseCase,
 )
 
 
@@ -176,3 +181,38 @@ def get_list_users_use_case(
 # ) -> UpdateUserProfileUseCase:
 #     """Get update user profile use case instance."""
 #     return UpdateUserProfileUseCase(user_repository)
+
+
+# PASO 4: Dependencias para casos de uso de administración avanzada
+
+def get_get_user_detail_use_case(
+    user_repository: UserRepositoryInterface = Depends(get_user_repository)
+) -> GetUserDetailUseCase:
+    """Get user detail use case instance."""
+    return GetUserDetailUseCase(user_repository)
+
+
+def get_admin_update_user_use_case(
+    user_repository: UserRepositoryInterface = Depends(get_user_repository),
+    password_service: PasswordServiceInterface = Depends(get_password_service),
+    email_service: EmailServiceInterface = Depends(get_email_service)
+) -> AdminUpdateUserUseCase:
+    """Get admin update user use case instance."""
+    return AdminUpdateUserUseCase(user_repository, password_service, email_service)
+
+
+def get_delete_user_use_case(
+    user_repository: UserRepositoryInterface = Depends(get_user_repository),
+    email_service: EmailServiceInterface = Depends(get_email_service)
+) -> DeleteUserUseCase:
+    """Get delete user use case instance."""
+    return DeleteUserUseCase(user_repository, email_service)
+
+
+def get_bulk_upload_users_use_case(
+    user_repository: UserRepositoryInterface = Depends(get_user_repository),
+    password_service: PasswordServiceInterface = Depends(get_password_service),
+    email_service: EmailServiceInterface = Depends(get_email_service)
+) -> BulkUploadUsersUseCase:
+    """Get bulk upload users use case instance."""
+    return BulkUploadUsersUseCase(user_repository, password_service, email_service)

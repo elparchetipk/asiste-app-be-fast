@@ -307,3 +307,159 @@ class HealthCheckResponse(BaseModel):
             }
         }
     )
+
+
+# PASO 4: Schemas para administración avanzada de usuarios
+
+class AdminUpdateUserRequest(BaseModel):
+    """Schema for updating any user field by admin (more comprehensive than UpdateUserRequest)."""
+    
+    first_name: Optional[str] = Field(None, min_length=2, max_length=100, description="User's first name")
+    last_name: Optional[str] = Field(None, min_length=2, max_length=100, description="User's last name")
+    email: Optional[EmailStr] = Field(None, description="User's email address")
+    document_number: Optional[str] = Field(None, min_length=6, max_length=15, description="User's document number")
+    document_type: Optional[DocumentType] = Field(None, description="Type of document")
+    phone: Optional[str] = Field(None, description="User's phone number")
+    role: Optional[UserRole] = Field(None, description="User's role in the system")
+    is_active: Optional[bool] = Field(None, description="Whether the user is active")
+    must_change_password: Optional[bool] = Field(None, description="Whether user must change password on next login")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "first_name": "Juan Carlos",
+                "last_name": "Pérez González",
+                "email": "juan.carlos@example.com",
+                "role": "INSTRUCTOR",
+                "is_active": True,
+                "must_change_password": False
+            }
+        }
+    )
+
+
+class UserDetailResponse(BaseModel):
+    """Schema for detailed user information (admin view)."""
+    
+    id: UUID = Field(..., description="User's unique identifier")
+    first_name: str = Field(..., description="User's first name")
+    last_name: str = Field(..., description="User's last name")
+    email: str = Field(..., description="User's email address")
+    document_number: str = Field(..., description="User's document number")
+    document_type: str = Field(..., description="Type of document")
+    phone: Optional[str] = Field(None, description="User's phone number")
+    role: str = Field(..., description="User's role in the system")
+    is_active: bool = Field(..., description="Whether the user is active")
+    must_change_password: bool = Field(..., description="Whether user must change password on next login")
+    created_at: datetime = Field(..., description="User creation timestamp")
+    updated_at: datetime = Field(..., description="User last update timestamp")
+    last_login_at: Optional[datetime] = Field(None, description="User last login timestamp")
+    deleted_at: Optional[datetime] = Field(None, description="User deletion timestamp (soft delete)")
+    
+    # HATEOAS links
+    links: dict = Field(..., description="Related operation links")
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": "123e4567-e89b-12d3-a456-426614174000",
+                "first_name": "Juan",
+                "last_name": "Pérez",
+                "email": "juan.perez@example.com",
+                "document_number": "12345678",
+                "document_type": "CC",
+                "phone": "+573001234567",
+                "role": "APPRENTICE",
+                "is_active": True,
+                "must_change_password": False,
+                "created_at": "2024-01-01T09:00:00Z",
+                "updated_at": "2024-01-01T10:00:00Z",
+                "last_login_at": "2024-01-01T15:30:00Z",
+                "deleted_at": None,
+                "links": {
+                    "self": "/api/v1/admin/users/123e4567-e89b-12d3-a456-426614174000",
+                    "update": "/api/v1/admin/users/123e4567-e89b-12d3-a456-426614174000",
+                    "delete": "/api/v1/admin/users/123e4567-e89b-12d3-a456-426614174000",
+                    "activate": "/api/v1/users/123e4567-e89b-12d3-a456-426614174000/activate",
+                    "deactivate": "/api/v1/users/123e4567-e89b-12d3-a456-426614174000/deactivate"
+                }
+            }
+        }
+    )
+
+
+class BulkUploadRequest(BaseModel):
+    """Schema for bulk user upload CSV."""
+    
+    file_content: str = Field(..., description="Base64 encoded CSV file content")
+    filename: str = Field(..., description="Original filename")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "file_content": "Zmlyc3RfbmFtZSxsYXN0X25hbWUsZW1haWwsZG9jdW1lbnRfbnVtYmVyLGRvY3VtZW50X3R5cGUscm9sZSxwaG9uZQpKdWFuLFDDqXJleiwganVhbi5wZXJlekBleGFtcGxlLmNvbSwxMjM0NTY3OCxDQyxBUFBSRU5USUNFLCszNTczMDAxMjM0NTY3",
+                "filename": "usuarios.csv"
+            }
+        }
+    )
+
+
+class BulkUploadResponse(BaseModel):
+    """Schema for bulk upload operation result."""
+    
+    message: str = Field(..., description="Operation summary message")
+    total_processed: int = Field(..., description="Total number of rows processed")
+    successful: int = Field(..., description="Number of users created successfully")
+    failed: int = Field(..., description="Number of rows that failed")
+    errors: List[dict] = Field(..., description="Detailed error information for failed rows")
+    created_users: List[dict] = Field(..., description="Summary of successfully created users")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "message": "Bulk upload completed",
+                "total_processed": 10,
+                "successful": 8,
+                "failed": 2,
+                "errors": [
+                    {
+                        "row": 3,
+                        "error": "Email already exists: juan.perez@example.com",
+                        "data": {"email": "juan.perez@example.com", "document_number": "12345678"}
+                    },
+                    {
+                        "row": 7,
+                        "error": "Invalid email format: invalid-email",
+                        "data": {"email": "invalid-email", "document_number": "87654321"}
+                    }
+                ],
+                "created_users": [
+                    {
+                        "id": "123e4567-e89b-12d3-a456-426614174000",
+                        "email": "maria.garcia@example.com",
+                        "document_number": "98765432",
+                        "role": "INSTRUCTOR"
+                    }
+                ]
+            }
+        }
+    )
+
+
+class DeleteUserResponse(BaseModel):
+    """Schema for user deletion response."""
+    
+    message: str = Field(..., description="Deletion confirmation message")
+    user_id: UUID = Field(..., description="ID of the deleted user")
+    deleted_at: datetime = Field(..., description="Timestamp when user was deleted")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "message": "User successfully deactivated",
+                "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                "deleted_at": "2024-01-01T16:00:00Z"
+            }
+        }
+    )

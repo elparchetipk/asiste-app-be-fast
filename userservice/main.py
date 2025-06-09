@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, timezone
 
 from app.infrastructure.config.database import engine, get_db_session, check_database_health
-from app.presentation.routers import auth_router, user_router
+from app.presentation.routers import auth_router, user_router, admin_user_router
 from app.presentation.schemas.user_schemas import HealthCheckResponse, ErrorResponse
 from app.domain.exceptions.user_exceptions import (
     UserDomainException,

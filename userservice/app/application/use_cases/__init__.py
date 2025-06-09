@@ -14,6 +14,11 @@ from .user_use_cases import (
     ActivateUserUseCase,
     DeactivateUserUseCase,
     ListUsersUseCase,
+    # PASO 4: Nuevos casos de uso para administración avanzada
+    GetUserDetailUseCase,
+    AdminUpdateUserUseCase,
+    DeleteUserUseCase,
+    BulkUploadUsersUseCase,
 )
 
 __all__ = [
@@ -29,4 +34,9 @@ __all__ = [
     "ActivateUserUseCase",
     "DeactivateUserUseCase",
     "ListUsersUseCase",
+    # PASO 4: Casos de uso de administración avanzada
+    "GetUserDetailUseCase",
+    "AdminUpdateUserUseCase",
+    "DeleteUserUseCase",
+    "BulkUploadUsersUseCase",
 ]

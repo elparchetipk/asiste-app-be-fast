@@ -98,3 +98,83 @@ class UserFilterDTO:
     is_active: Optional[bool] = None
     search_term: Optional[str] = None  # Search in name, email, document
     document_type: Optional[DocumentType] = None
+
+
+# PASO 4: DTOs para administración avanzada de usuarios
+
+@dataclass(frozen=True)
+class AdminUpdateUserDTO:
+    """DTO for admin user update with all possible fields."""
+    
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    document_number: Optional[str] = None
+    document_type: Optional[DocumentType] = None
+    phone: Optional[str] = None
+    role: Optional[UserRole] = None
+    is_active: Optional[bool] = None
+    must_change_password: Optional[bool] = None
+
+
+@dataclass(frozen=True)
+class UserDetailDTO:
+    """DTO for detailed user information (admin view)."""
+    
+    id: UUID
+    first_name: str
+    last_name: str
+    email: str
+    document_number: str
+    document_type: str
+    phone: Optional[str]
+    role: str
+    is_active: bool
+    must_change_password: bool
+    created_at: datetime
+    updated_at: datetime
+    last_login_at: Optional[datetime]
+    deleted_at: Optional[datetime]
+    
+    @property
+    def full_name(self) -> str:
+        """Get the full name of the user."""
+        return f"{self.first_name} {self.last_name}"
+
+
+@dataclass(frozen=True)
+class BulkUploadUserDTO:
+    """DTO for individual user in bulk upload."""
+    
+    first_name: str
+    last_name: str
+    email: str
+    document_number: str
+    document_type: DocumentType
+    role: UserRole
+    phone: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class BulkUploadResultDTO:
+    """DTO for bulk upload operation result."""
+    
+    total_processed: int
+    successful: int
+    failed: int
+    errors: list[dict]
+    created_users: list[dict]
+    
+    @property
+    def message(self) -> str:
+        """Generate summary message."""
+        return f"Bulk upload completed: {self.successful}/{self.total_processed} users created successfully"
+
+
+@dataclass(frozen=True)
+class DeleteUserResultDTO:
+    """DTO for user deletion result."""
+    
+    user_id: UUID
+    deleted_at: datetime
+    message: str = "User successfully deactivated"

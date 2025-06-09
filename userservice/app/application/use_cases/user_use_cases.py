@@ -366,3 +366,308 @@ class ListUsersUseCase:
             page_size=page_size,
             total_pages=total_pages,
         )
+
+
+# PASO 4: Casos de uso para administración avanzada de usuarios
+
+class GetUserDetailUseCase:
+    """Use case for getting detailed user information (admin view)."""
+    
+    def __init__(self, user_repository: UserRepositoryInterface):
+        self._user_repository = user_repository
+    
+    async def execute(self, user_id: UUID) -> "UserDetailDTO":
+        """Get detailed user information."""
+        from ..dtos import UserDetailDTO
+        
+        user = await self._user_repository.get_by_id(user_id)
+        if not user:
+            raise UserNotFoundError(str(user_id))
+        
+        return UserDetailDTO(
+            id=user.id,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            email=user.email.value,
+            document_number=user.document_number.value,
+            document_type=user.document_number.document_type.value,
+            phone=getattr(user, 'phone', None),
+            role=user.role.value,
+            is_active=user.is_active,
+            must_change_password=user.must_change_password,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            last_login_at=user.last_login_at,
+            deleted_at=getattr(user, 'deleted_at', None),
+        )
+
+
+class AdminUpdateUserUseCase:
+    """Use case for admin user update with all possible fields."""
+    
+    def __init__(
+        self,
+        user_repository: UserRepositoryInterface,
+        password_service: PasswordServiceInterface,
+        email_service: EmailServiceInterface,
+    ):
+        self._user_repository = user_repository
+        self._password_service = password_service
+        self._email_service = email_service
+    
+    async def execute(self, user_id: UUID, update_data: "AdminUpdateUserDTO") -> "UserDetailDTO":
+        """Update user with admin privileges."""
+        from ..dtos import AdminUpdateUserDTO, UserDetailDTO
+        
+        user = await self._user_repository.get_by_id(user_id)
+        if not user:
+            raise UserNotFoundError(str(user_id))
+        
+        # Check for email conflicts if email is being changed
+        if update_data.email and update_data.email != user.email.value:
+            email = Email(update_data.email)
+            if await self._user_repository.exists_by_email(email.value):
+                raise UserAlreadyExistsError("email", email.value)
+        
+        # Check for document number conflicts if being changed
+        if update_data.document_number and update_data.document_number != user.document_number.value:
+            if update_data.document_type:
+                document_number = DocumentNumber(update_data.document_number, update_data.document_type)
+            else:
+                document_number = DocumentNumber(update_data.document_number, user.document_number.document_type)
+            
+            if await self._user_repository.exists_by_document_number(document_number.value):
+                raise UserAlreadyExistsError("document_number", document_number.value)
+        
+        # Apply updates
+        if update_data.first_name is not None:
+            user.first_name = update_data.first_name
+        if update_data.last_name is not None:
+            user.last_name = update_data.last_name
+        if update_data.email is not None:
+            user.email = Email(update_data.email)
+        if update_data.document_number is not None:
+            if update_data.document_type:
+                user.document_number = DocumentNumber(update_data.document_number, update_data.document_type)
+            else:
+                user.document_number = DocumentNumber(update_data.document_number, user.document_number.document_type)
+        if update_data.phone is not None:
+            user.phone = update_data.phone
+        if update_data.role is not None:
+            user.role = update_data.role
+        if update_data.is_active is not None:
+            if update_data.is_active:
+                user.activate()
+            else:
+                user.deactivate()
+        if update_data.must_change_password is not None:
+            user.must_change_password = update_data.must_change_password
+        
+        # Save changes
+        updated_user = await self._user_repository.update(user)
+        
+        # Send notification if user was deactivated
+        if update_data.is_active is False:
+            try:
+                await self._email_service.send_account_deactivation_notification(
+                    to_email=updated_user.email.value,
+                    user_name=updated_user.full_name(),
+                )
+            except Exception:
+                pass
+        
+        return UserDetailDTO(
+            id=updated_user.id,
+            first_name=updated_user.first_name,
+            last_name=updated_user.last_name,
+            email=updated_user.email.value,
+            document_number=updated_user.document_number.value,
+            document_type=updated_user.document_number.document_type.value,
+            phone=getattr(updated_user, 'phone', None),
+            role=updated_user.role.value,
+            is_active=updated_user.is_active,
+            must_change_password=updated_user.must_change_password,
+            created_at=updated_user.created_at,
+            updated_at=updated_user.updated_at,
+            last_login_at=updated_user.last_login_at,
+            deleted_at=getattr(updated_user, 'deleted_at', None),
+        )
+
+
+class DeleteUserUseCase:
+    """Use case for deleting (soft delete) a user."""
+    
+    def __init__(
+        self,
+        user_repository: UserRepositoryInterface,
+        email_service: EmailServiceInterface,
+    ):
+        self._user_repository = user_repository
+        self._email_service = email_service
+    
+    async def execute(self, user_id: UUID, admin_user_id: UUID) -> "DeleteUserResultDTO":
+        """Soft delete a user."""
+        from datetime import datetime
+        from ..dtos import DeleteUserResultDTO
+        
+        # Prevent admin from deleting themselves
+        if user_id == admin_user_id:
+            raise ValueError("Admin cannot delete their own account")
+        
+        user = await self._user_repository.get_by_id(user_id)
+        if not user:
+            raise UserNotFoundError(str(user_id))
+        
+        # Perform soft delete
+        user.deactivate()
+        user.deleted_at = datetime.utcnow()
+        
+        # Save changes
+        updated_user = await self._user_repository.update(user)
+        
+        # Send notification email
+        try:
+            await self._email_service.send_account_deactivation_notification(
+                to_email=updated_user.email.value,
+                user_name=updated_user.full_name(),
+            )
+        except Exception:
+            pass
+        
+        return DeleteUserResultDTO(
+            user_id=user_id,
+            deleted_at=updated_user.deleted_at,
+            message="User successfully deactivated"
+        )
+
+
+class BulkUploadUsersUseCase:
+    """Use case for bulk user upload from CSV."""
+    
+    def __init__(
+        self,
+        user_repository: UserRepositoryInterface,
+        password_service: PasswordServiceInterface,
+        email_service: EmailServiceInterface,
+    ):
+        self._user_repository = user_repository
+        self._password_service = password_service
+        self._email_service = email_service
+    
+    async def execute(self, csv_content: str) -> "BulkUploadResultDTO":
+        """Process bulk user upload from CSV content."""
+        import csv
+        import io
+        import base64
+        from ..dtos import BulkUploadResultDTO, BulkUploadUserDTO
+        
+        total_processed = 0
+        successful = 0
+        failed = 0
+        errors = []
+        created_users = []
+        
+        try:
+            # Decode base64 content if needed
+            try:
+                decoded_content = base64.b64decode(csv_content).decode('utf-8')
+            except Exception:
+                # If not base64, use as-is
+                decoded_content = csv_content
+            
+            # Parse CSV
+            csv_reader = csv.DictReader(io.StringIO(decoded_content))
+            
+            for row_num, row in enumerate(csv_reader, start=2):  # Start at 2 because row 1 is headers
+                total_processed += 1
+                
+                try:
+                    # Validate required fields
+                    required_fields = ['first_name', 'last_name', 'email', 'document_number', 'document_type', 'role']
+                    missing_fields = [field for field in required_fields if not row.get(field)]
+                    if missing_fields:
+                        raise ValueError(f"Missing required fields: {', '.join(missing_fields)}")
+                    
+                    # Create DTO
+                    user_dto = BulkUploadUserDTO(
+                        first_name=row['first_name'].strip(),
+                        last_name=row['last_name'].strip(),
+                        email=row['email'].strip(),
+                        document_number=row['document_number'].strip(),
+                        document_type=DocumentType(row['document_type'].strip()),
+                        role=UserRole(row['role'].strip()),
+                        phone=row.get('phone', '').strip() or None,
+                    )
+                    
+                    # Create user (password = document number)
+                    email = Email(user_dto.email)
+                    document_number = DocumentNumber(user_dto.document_number, user_dto.document_type)
+                    
+                    # Check duplicates
+                    if await self._user_repository.exists_by_email(email.value):
+                        raise ValueError(f"Email already exists: {email.value}")
+                    
+                    if await self._user_repository.exists_by_document_number(document_number.value):
+                        raise ValueError(f"Document number already exists: {document_number.value}")
+                    
+                    # Use document number as initial password
+                    password = user_dto.document_number
+                    hashed_password = self._password_service.hash_password(password)
+                    
+                    # Create user entity
+                    user = User(
+                        first_name=user_dto.first_name,
+                        last_name=user_dto.last_name,
+                        email=email,
+                        document_number=document_number,
+                        hashed_password=hashed_password,
+                        role=user_dto.role,
+                        phone=user_dto.phone,
+                        must_change_password=True,  # Force password change on first login
+                    )
+                    
+                    # Save user
+                    created_user = await self._user_repository.create(user)
+                    successful += 1
+                    
+                    created_users.append({
+                        "id": str(created_user.id),
+                        "email": created_user.email.value,
+                        "document_number": created_user.document_number.value,
+                        "role": created_user.role.value,
+                    })
+                    
+                    # Send welcome email (async, don't fail if it fails)
+                    try:
+                        await self._email_service.send_welcome_email(
+                            to_email=created_user.email.value,
+                            user_name=created_user.full_name(),
+                            temporary_password=password,
+                        )
+                    except Exception:
+                        pass
+                    
+                except Exception as e:
+                    failed += 1
+                    errors.append({
+                        "row": row_num,
+                        "error": str(e),
+                        "data": dict(row),
+                    })
+            
+        except Exception as e:
+            return BulkUploadResultDTO(
+                total_processed=0,
+                successful=0,
+                failed=1,
+                errors=[{"row": 1, "error": f"CSV parsing error: {str(e)}", "data": {}}],
+                created_users=[],
+            )
+        
+        return BulkUploadResultDTO(
+            total_processed=total_processed,
+            successful=successful,
+            failed=failed,
+            errors=errors,
+            created_users=created_users,
+        )
