@@ -6,7 +6,9 @@ from uuid import UUID
 
 from ...domain import (
     UserRepositoryInterface, 
+    RefreshTokenRepositoryInterface,  # PASO 6: Added
     User, 
+    RefreshToken,  # PASO 6: Added
     Email,
     AuthenticationError,
     UserNotFoundError,
@@ -19,6 +21,8 @@ from ..interfaces import PasswordServiceInterface, TokenServiceInterface, EmailS
 from ..dtos import (
     LoginDTO, 
     TokenResponseDTO, 
+    RefreshTokenDTO,  # PASO 6: Added
+    RefreshTokenResponseDTO,  # PASO 6: Added
     UserResponseDTO,
     ForgotPasswordDTO,
     ResetPasswordDTO,
@@ -285,3 +289,69 @@ class ForceChangePasswordUseCase:
         # Invalidate all existing refresh tokens except current one
         # (The user should remain logged in after forced change)
         self._token_service.revoke_all_user_tokens(user.id, exclude_current=True)
+
+
+# PASO 6: Refresh Token Use Case for HU-BE-003
+
+class RefreshTokenUseCase:
+    """Use case for refreshing access tokens (HU-BE-003)."""
+    
+    def __init__(
+        self,
+        user_repository: UserRepositoryInterface,
+        refresh_token_repository: RefreshTokenRepositoryInterface,
+        token_service: TokenServiceInterface,
+    ):
+        self._user_repository = user_repository
+        self._refresh_token_repository = refresh_token_repository
+        self._token_service = token_service
+    
+    async def execute(self, refresh_data: RefreshTokenDTO) -> RefreshTokenResponseDTO:
+        """Refresh access token using valid refresh token."""
+        # Get refresh token from repository
+        refresh_token = await self._refresh_token_repository.get_by_token(refresh_data.refresh_token)
+        if not refresh_token:
+            raise InvalidTokenError("Invalid refresh token")
+        
+        # Validate refresh token
+        try:
+            refresh_token.validate_for_refresh()
+        except InvalidTokenError:
+            # Clean up invalid token
+            await self._refresh_token_repository.delete(refresh_token.id)
+            raise
+        
+        # Get user
+        user = await self._user_repository.get_by_id(refresh_token.user_id)
+        if not user:
+            raise UserNotFoundError(f"User not found: {refresh_token.user_id}")
+        
+        # Check if user is still active
+        if not user.is_active:
+            # Revoke all tokens for inactive user
+            await self._refresh_token_repository.revoke_all_user_tokens(user.id)
+            raise UserInactiveError(f"User account is inactive: {user.id}")
+        
+        # Mark token as used
+        refresh_token.mark_as_used()
+        
+        # Create new access token
+        access_token = self._token_service.create_access_token(
+            user_id=user.id,
+            role=user.role.value,
+            expires_delta=3600  # 1 hour
+        )
+        
+        # Rotate refresh token (create new one and revoke old one)
+        new_refresh_token = refresh_token.rotate()
+        await self._refresh_token_repository.save(new_refresh_token)
+        
+        # Update the used token in repository
+        await self._refresh_token_repository.update(refresh_token)
+        
+        return RefreshTokenResponseDTO(
+            access_token=access_token,
+            refresh_token=new_refresh_token.token,
+            token_type="bearer",
+            expires_in=3600,  # 1 hour
+        )

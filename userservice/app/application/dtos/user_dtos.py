@@ -75,6 +75,7 @@ class TokenResponseDTO:
     """DTO for authentication token response."""
     
     access_token: str
+    refresh_token: str  # PASO 6: Added refresh token
     token_type: str
     expires_in: int
     user: UserResponseDTO
@@ -90,6 +91,7 @@ class RefreshTokenDTO:
 class RefreshTokenResponseDTO:
     """DTO for token refresh response (HU-BE-003)."""
     access_token: str
+    refresh_token: str  # PASO 6: New refresh token after rotation
     token_type: str
     expires_in: int
 

@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from uuid import UUID
 
 
@@ -48,5 +48,17 @@ class TokenServiceInterface(ABC):
     
     @abstractmethod
     def revoke_all_user_tokens(self, user_id: UUID, exclude_current: bool = False) -> None:
-        """Revoke all tokens for a specific user."""
+        """Revoke all tokens for a user."""
+        pass
+    
+    # PASO 6: Métodos específicos para refresh tokens
+    
+    @abstractmethod
+    def validate_refresh_token(self, refresh_token: str) -> Dict[str, Any]:
+        """Validate and decode a refresh token."""
+        pass
+    
+    @abstractmethod
+    def get_user_id_from_refresh_token(self, refresh_token: str) -> UUID:
+        """Extract user ID from refresh token."""
         pass

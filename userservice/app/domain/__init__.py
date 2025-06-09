@@ -1,6 +1,6 @@
 """Domain layer for user service."""
 
-from .entities import User, UserRole
+from .entities import User, UserRole, RefreshToken
 from .value_objects import Email, DocumentNumber, DocumentType
 from .exceptions import (
     UserDomainException,
@@ -15,12 +15,13 @@ from .exceptions import (
     InvalidTokenError,
     WeakPasswordError,
 )
-from .repositories import UserRepositoryInterface
+from .repositories import UserRepositoryInterface, RefreshTokenRepositoryInterface
 
 __all__ = [
     # Entities
     "User",
     "UserRole",
+    "RefreshToken",
     # Value Objects
     "Email",
     "DocumentNumber",
@@ -39,4 +40,5 @@ __all__ = [
     "WeakPasswordError",
     # Repositories
     "UserRepositoryInterface",
+    "RefreshTokenRepositoryInterface",
 ]
