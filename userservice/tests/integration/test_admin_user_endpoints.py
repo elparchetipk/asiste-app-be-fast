@@ -250,9 +250,6 @@ Carlos,Lopez,carlos.lopez.{suffix}@example.com,33333{suffix[:3]},CC,apprentice,+
         assert response.status_code == 200
         data = response.json()
         
-        # DEBUG: Print response data
-        print(f"🔧 DEBUG - Response data: {data}")
-        
         # Verify response structure
         assert "message" in data
         assert "total_processed" in data
