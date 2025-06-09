@@ -31,7 +31,7 @@ class TestUserEndpoints:
         
         # Crear el usuario para usar en tests usando admin headers
         admin_headers = self.auth_helper.get_admin_headers()
-        response = self.client.post("/users/", json=self.base_user_data, headers=admin_headers)
+        response = self.self.client.post("/users/", json=self.base_user_data, headers=admin_headers)
         if response.status_code == 201:
             self.created_user = response.json()
             self.user_id = self.created_user["id"]
@@ -50,7 +50,7 @@ class TestUserEndpoints:
             "role": "instructor"
         }
         
-        response = client.post("/users/", json=user_data)
+        response = self.client.post("/users/", json=user_data)
         
         assert response.status_code == 201
         data = response.json()
@@ -67,7 +67,7 @@ class TestUserEndpoints:
 
     def test_create_user_duplicate_email(self):
         """Test crear usuario con email duplicado"""
-        response = client.post("/users/", json=self.base_user_data)
+        response = self.client.post("/users/", json=self.base_user_data)
         
         assert response.status_code == 400
         assert "already exists" in response.json()["detail"].lower()
@@ -78,7 +78,7 @@ class TestUserEndpoints:
         invalid_user_data["email"] = f"invalid-{random.randint(100000, 999999)}@test.com"
         invalid_user_data["password"] = "weak"
         
-        response = client.post("/users/", json=invalid_user_data)
+        response = self.client.post("/users/", json=invalid_user_data)
         
         assert response.status_code in [400, 422]  # Both are valid for validation errors
         detail = response.json()["detail"]
@@ -88,7 +88,7 @@ class TestUserEndpoints:
 
     def test_get_user_by_id_success(self):
         """Test obtener usuario por ID exitosamente"""
-        response = client.get(f"/users/{self.user_id}")
+        response = self.client.get(f"/users/{self.user_id}")
         
         assert response.status_code == 200
         data = response.json()
@@ -99,19 +99,19 @@ class TestUserEndpoints:
     def test_get_user_by_id_not_found(self):
         """Test obtener usuario con ID inexistente"""
         fake_id = "550e8400-e29b-41d4-a716-446655440000"
-        response = client.get(f"/users/{fake_id}")
+        response = self.client.get(f"/users/{fake_id}")
         
         assert response.status_code == 404
 
     def test_get_user_by_id_invalid_uuid(self):
         """Test obtener usuario con UUID inválido"""
-        response = client.get("/users/invalid-uuid")
+        response = self.client.get("/users/invalid-uuid")
         
         assert response.status_code == 422
 
     def test_list_users_success(self):
         """Test listar usuarios exitosamente"""
-        response = client.get("/users/")
+        response = self.client.get("/users/")
         
         assert response.status_code == 200
         data = response.json()
@@ -124,7 +124,7 @@ class TestUserEndpoints:
 
     def test_list_users_with_pagination(self):
         """Test listar usuarios con paginación"""
-        response = client.get("/users/?page=1&page_size=5")
+        response = self.client.get("/users/?page=1&page_size=5")
         
         assert response.status_code == 200
         data = response.json()
@@ -134,7 +134,7 @@ class TestUserEndpoints:
 
     def test_list_users_with_filters(self):
         """Test listar usuarios con filtros"""
-        response = client.get("/users/?role=apprentice&is_active=true")
+        response = self.client.get("/users/?role=apprentice&is_active=true")
         
         assert response.status_code == 200
         data = response.json()
@@ -146,11 +146,11 @@ class TestUserEndpoints:
     def test_activate_user_success(self):
         """Test activar usuario exitosamente"""
         # Primero desactivar el usuario
-        deactivate_response = client.patch(f"/users/{self.user_id}/deactivate")
+        deactivate_response = self.client.patch(f"/users/{self.user_id}/deactivate")
         assert deactivate_response.status_code == 200
         
         # Ahora activarlo
-        response = client.patch(f"/users/{self.user_id}/activate")
+        response = self.client.patch(f"/users/{self.user_id}/activate")
         
         assert response.status_code == 200
         data = response.json()
@@ -160,13 +160,13 @@ class TestUserEndpoints:
     def test_activate_user_not_found(self):
         """Test activar usuario inexistente"""
         fake_id = "550e8400-e29b-41d4-a716-446655440000"
-        response = client.patch(f"/users/{fake_id}/activate")
+        response = self.client.patch(f"/users/{fake_id}/activate")
         
         assert response.status_code == 404
 
     def test_deactivate_user_success(self):
         """Test desactivar usuario exitosamente"""
-        response = client.patch(f"/users/{self.user_id}/deactivate")
+        response = self.client.patch(f"/users/{self.user_id}/deactivate")
         
         assert response.status_code == 200
         data = response.json()
@@ -176,7 +176,7 @@ class TestUserEndpoints:
     def test_deactivate_user_not_found(self):
         """Test desactivar usuario inexistente"""
         fake_id = "550e8400-e29b-41d4-a716-446655440000"
-        response = client.patch(f"/users/{fake_id}/deactivate")
+        response = self.client.patch(f"/users/{fake_id}/deactivate")
         
         assert response.status_code == 404
 
@@ -187,7 +187,7 @@ class TestUserEndpoints:
             "new_password": "NewSecurePass456!"
         }
         
-        response = client.patch(f"/users/{self.user_id}/change-password", json=password_data)
+        response = self.client.patch(f"/users/{self.user_id}/change-password", json=password_data)
         
         assert response.status_code == 200
         data = response.json()
@@ -201,7 +201,7 @@ class TestUserEndpoints:
             "new_password": "NewSecurePass456!"
         }
         
-        response = client.patch(f"/users/{self.user_id}/change-password", json=password_data)
+        response = self.client.patch(f"/users/{self.user_id}/change-password", json=password_data)
         
         assert response.status_code == 400
 
@@ -212,7 +212,7 @@ class TestUserEndpoints:
             "new_password": "weak"
         }
         
-        response = client.patch(f"/users/{self.user_id}/change-password", json=password_data)
+        response = self.client.patch(f"/users/{self.user_id}/change-password", json=password_data)
         
         assert response.status_code in [400, 422]  # Both are valid for validation errors
         # The test passes if we get a validation error response
@@ -225,7 +225,7 @@ class TestUserEndpoints:
             "new_password": "NewSecurePass456!"
         }
         
-        response = client.patch(f"/users/{fake_id}/change-password", json=password_data)
+        response = self.client.patch(f"/users/{fake_id}/change-password", json=password_data)
         
         assert response.status_code == 400
 
@@ -242,23 +242,23 @@ class TestUserEndpoints:
             "role": "administrative"
         }
         
-        create_response = client.post("/users/", json=user_data)
+        create_response = self.client.post("/users/", json=user_data)
         assert create_response.status_code == 201
         user = create_response.json()
         user_id = user["id"]
         
         # 2. Obtener usuario
-        get_response = client.get(f"/users/{user_id}")
+        get_response = self.client.get(f"/users/{user_id}")
         assert get_response.status_code == 200
         assert get_response.json()["email"] == user_data["email"]
         
         # 3. Desactivar usuario
-        deactivate_response = client.patch(f"/users/{user_id}/deactivate")
+        deactivate_response = self.client.patch(f"/users/{user_id}/deactivate")
         assert deactivate_response.status_code == 200
         assert deactivate_response.json()["is_active"] is False
         
         # 4. Activar usuario
-        activate_response = client.patch(f"/users/{user_id}/activate")
+        activate_response = self.client.patch(f"/users/{user_id}/activate")
         assert activate_response.status_code == 200
         assert activate_response.json()["is_active"] is True
         
@@ -267,11 +267,11 @@ class TestUserEndpoints:
             "current_password": "LifecyclePass123!",
             "new_password": "NewLifecyclePass456!"
         }
-        password_response = client.patch(f"/users/{user_id}/change-password", json=password_data)
+        password_response = self.client.patch(f"/users/{user_id}/change-password", json=password_data)
         assert password_response.status_code == 200
         
         # 6. Verificar usuario final
-        final_get_response = client.get(f"/users/{user_id}")
+        final_get_response = self.client.get(f"/users/{user_id}")
         assert final_get_response.status_code == 200
         final_user = final_get_response.json()
         assert final_user["is_active"] is True
