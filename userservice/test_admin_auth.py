@@ -43,7 +43,8 @@ async def test_admin_auth():
             encoded_content = base64.b64encode(csv_content.encode('utf-8')).decode('utf-8')
             
             upload_data = {
-                "file_content": encoded_content
+                "file_content": encoded_content,
+                "filename": "test_users.csv"
             }
             response = client.post("/api/v1/admin/users/upload", json=upload_data, headers=headers)
             print(f"✅ Test POST admin/users/upload: Status {response.status_code}")
