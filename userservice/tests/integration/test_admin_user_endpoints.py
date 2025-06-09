@@ -22,7 +22,11 @@ class TestAdminUserEndpoints:
         self.auth_helper = AuthTestHelper(test_client)
         
         # Create admin user and get token
-        self.admin_token = await self.auth_helper.get_admin_token()
+        admin_created = await self.auth_helper.seed_admin_user()
+        if not admin_created:
+            pytest.fail("No se pudo crear usuario admin para tests")
+            
+        self.admin_token = self.auth_helper.get_admin_token()
         self.admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
         
         # Create test user for admin operations
@@ -310,7 +314,11 @@ class TestAdminUserEndpointsIntegration:
         self.auth_helper = AuthTestHelper(test_client)
         
         # Create admin user and get token
-        self.admin_token = await self.auth_helper.get_admin_token()
+        admin_created = await self.auth_helper.seed_admin_user()
+        if not admin_created:
+            pytest.fail("No se pudo crear usuario admin para tests")
+            
+        self.admin_token = self.auth_helper.get_admin_token()
         self.admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
     
     def test_complete_admin_user_workflow(self):
