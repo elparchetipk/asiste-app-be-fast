@@ -54,6 +54,7 @@ class UserResponseDTO:
     created_at: datetime
     updated_at: datetime
     last_login_at: Optional[datetime]
+    phone: Optional[str] = None  # PASO 4: Additional user field
     
     @property
     def full_name(self) -> str:
