@@ -266,12 +266,14 @@ Carlos,Lopez,carlos.lopez.{suffix}@example.com,33333{suffix[:3]},CC,apprentice,+
     def test_bulk_upload_users_with_errors(self):
         """Test bulk upload with invalid data."""
         import base64
+        import uuid
         
-        # Create CSV with invalid data
-        csv_content = """first_name,last_name,email,document_number,document_type,role
-Valid,User,valid.user@example.com,44444444,CC,apprentice
-Invalid,Email,invalid-email,55555555,CC,apprentice
-Duplicate,Document,duplicate.user@example.com,44444444,CC,instructor"""
+        # Create CSV with invalid data and unique document numbers
+        suffix = str(uuid.uuid4())[:8]
+        csv_content = f"""first_name,last_name,email,document_number,document_type,role
+Valid,User,valid.user.{suffix}@example.com,44444{suffix[:3]},CC,apprentice
+Invalid,Email,invalid-email,55555{suffix[:3]},CC,apprentice
+Duplicate,Document,duplicate.user.{suffix}@example.com,44444{suffix[:3]},CC,instructor"""
         
         encoded_content = base64.b64encode(csv_content.encode('utf-8')).decode('utf-8')
         
