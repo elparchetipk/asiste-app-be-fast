@@ -1,18 +1,17 @@
 import asyncio
 import sys
 import os
+from pathlib import Path
 from logging.config import fileConfig
 
-# Add print statements to debug PYTHONPATH and sys.path
-print(f"PYTHONPATH: {os.environ.get('PYTHONPATH')}")
-print(f"sys.path: {sys.path}")
+# Add the userservice directory to Python path for imports
+userservice_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(userservice_dir))
 
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
 
-# Assuming PYTHONPATH is set to the 'userservice' directory,
-# imports should work directly.
 from app.config import settings
 from app.infrastructure.models.user_model import Base
 
