@@ -61,7 +61,7 @@ class TestJWTAuthentication:
         # Intentar crear el usuario (esto fallará para roles no-admin sin autenticación)
         # Por ahora, vamos a crear usuarios directamente para pruebas
         
-        response = client.post("/users/", json=user_data)
+        response = self.client.post("/users/", json=user_data)
         
         if response.status_code == 422:  # Error de autenticación esperado
             # Para las pruebas, necesitamos un método alternativo
@@ -69,7 +69,7 @@ class TestJWTAuthentication:
             pass
         
         # Login para obtener token
-        login_response = client.post("/auth/login", json={
+        login_response = self.client.post("/auth/login", json={
             "username": user_data["email"],
             "password": user_data["password"]
         })
@@ -102,11 +102,11 @@ class TestJWTAuthentication:
         
         for method, endpoint, payload in test_endpoints:
             if method == "GET":
-                response = client.get(endpoint)
+                response = self.client.get(endpoint)
             elif method == "POST":
-                response = client.post(endpoint, json=payload)
+                response = self.client.post(endpoint, json=payload)
             elif method == "PATCH":
-                response = client.patch(endpoint, json=payload)
+                response = self.client.patch(endpoint, json=payload)
             
             # Tanto 401 (Unauthorized) como 403 (Forbidden) indican protección de autenticación
             assert response.status_code in [401, 403], f"Endpoint {method} {endpoint} should require authentication. Got: {response.status_code}, Response: {response.json()}"
@@ -115,7 +115,7 @@ class TestJWTAuthentication:
         """Verificar que tokens inválidos son rechazados."""
         invalid_headers = {"Authorization": "Bearer invalid_token_here"}
         
-        response = client.get("/users/", headers=invalid_headers)
+        response = self.client.get("/users/", headers=invalid_headers)
         assert response.status_code == 401
         response_detail = response.json()["detail"].lower()
         assert any(keyword in response_detail for keyword in ["token inválido", "invalid", "error de autenticación", "authentication error"])
@@ -126,7 +126,7 @@ class TestJWTAuthentication:
         expired_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImV4cCI6MTYxNjIzOTAyMn0.invalid"
         headers = {"Authorization": f"Bearer {expired_token}"}
         
-        response = client.get("/users/", headers=headers)
+        response = self.client.get("/users/", headers=headers)
         assert response.status_code == 401
 
     def test_admin_can_access_all_endpoints(self):

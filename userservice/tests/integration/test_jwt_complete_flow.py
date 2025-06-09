@@ -8,13 +8,23 @@ from fastapi.testclient import TestClient
 
 from main import app
 from app.domain.value_objects.user_role import UserRole
-
-
-client = TestClient(app)
+from tests.utils.test_helpers import AuthTestHelper, TestDataFactory
 
 
 class TestJWTCompleteFlow:
     """Pruebas del flujo completo de autenticación JWT."""
+
+    @pytest.fixture(autouse=True)
+    async def setup_test_environment(self, test_client, db_tables_ready):
+        """Setup que se ejecuta antes de cada test"""
+        # Usar el cliente de test del fixture
+        self.client = test_client
+        
+        # Inicializar helper de autenticación
+        self.auth_helper = AuthTestHelper(self.client)
+        
+        # Crear admin usando el seeder
+        await self.auth_helper.seed_admin_user()
 
     def test_complete_jwt_flow_without_existing_admin(self):
         """
