@@ -13,19 +13,20 @@ from tests.utils.test_helpers import AuthTestHelper, TestDataFactory
 from app.domain.value_objects.user_role import UserRole
 
 
-client = TestClient(app)
-
-
 class TestUserEndpointsWithAuth:
     """Suite de tests para todos los endpoints de usuarios con autenticación JWT"""
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    async def setup_test_environment(self, test_client, db_tables_ready):
         """Setup que se ejecuta antes de cada test"""
+        # Usar el cliente de test del fixture
+        self.client = test_client
+        
         # Inicializar helper de autenticación
-        self.auth_helper = AuthTestHelper(client)
+        self.auth_helper = AuthTestHelper(self.client)
         
         # Crear admin usando el seeder antes de seed_database
-        asyncio.run(self.auth_helper.seed_admin_user())
+        await self.auth_helper.seed_admin_user()
         
         # Sembrar la base de datos con usuarios de test
         self.seeded_users = self.auth_helper.seed_database()
@@ -41,7 +42,7 @@ class TestUserEndpointsWithAuth:
         )
         
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.post("/users/", json=self.base_user_data, headers=admin_headers)
+        response = self.client.post("/users/", json=self.base_user_data, headers=admin_headers)
         
         if response.status_code == 201:
             self.created_user = response.json()
