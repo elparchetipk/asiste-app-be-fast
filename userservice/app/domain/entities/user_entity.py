@@ -23,6 +23,9 @@ class User:
     last_login_at: datetime | None = None
     deleted_at: datetime | None = None  # PASO 4: Soft delete support
     phone: str | None = None  # PASO 4: Additional user field
+    # PASO 5: Password reset token support
+    reset_password_token: str | None = None
+    reset_password_token_expires_at: datetime | None = None
 
     def __post_init__(self):
         if not self.first_name or not self.first_name.strip():
@@ -76,4 +79,34 @@ class User:
         
     def record_login(self):
         self.last_login_at = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
+    
+    # PASO 5: Password reset token methods
+    def set_reset_password_token(self, token: str, expires_at: datetime):
+        """Set password reset token and expiration."""
+        self.reset_password_token = token
+        self.reset_password_token_expires_at = expires_at
+        self.updated_at = datetime.utcnow()
+    
+    def clear_reset_password_token(self):
+        """Clear password reset token after use or expiration."""
+        self.reset_password_token = None
+        self.reset_password_token_expires_at = None
+        self.updated_at = datetime.utcnow()
+    
+    def is_reset_token_valid(self, token: str) -> bool:
+        """Check if the provided reset token is valid and not expired."""
+        if not self.reset_password_token or not self.reset_password_token_expires_at:
+            return False
+        
+        # Check token match and expiration
+        return (
+            self.reset_password_token == token and
+            datetime.utcnow() < self.reset_password_token_expires_at
+        )
+    
+    def force_change_password(self, new_hashed_password: str):
+        """Force change password and update must_change_password flag."""
+        self.hashed_password = new_hashed_password
+        self.must_change_password = False
         self.updated_at = datetime.utcnow()

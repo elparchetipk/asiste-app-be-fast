@@ -31,6 +31,9 @@ class UserModel(Base):
     last_login_at = Column(DateTime, nullable=True)
     deleted_at = Column(DateTime, nullable=True)  # PASO 4: Soft delete support
     phone = Column(String(20), nullable=True)  # PASO 4: Additional user field
+    # PASO 5: Password reset token support
+    reset_password_token = Column(String(100), nullable=True, index=True)
+    reset_password_token_expires_at = Column(DateTime, nullable=True)
     
     def __repr__(self):
         return f"<UserModel(id={self.id}, email={self.email}, role={self.role})>"
