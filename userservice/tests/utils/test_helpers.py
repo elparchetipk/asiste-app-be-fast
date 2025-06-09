@@ -207,6 +207,10 @@ class AuthTestHelper:
             return self.get_auth_headers(token)
         return None
 
+    def get_admin_token(self) -> Optional[str]:
+        """Obtener token de admin."""
+        return self.get_user_token("admin")
+
     def get_admin_headers(self) -> Optional[Dict[str, str]]:
         """Obtener headers de admin."""
         return self.get_user_headers("admin")
