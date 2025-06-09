@@ -64,7 +64,7 @@ class TestUserEndpointsWithAuth:
         )
         
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.post("/users/", json=user_data, headers=admin_headers)
+        response = self.client.post("/users/", json=user_data, headers=admin_headers)
         
         assert response.status_code == 201
         data = response.json()
@@ -87,7 +87,7 @@ class TestUserEndpointsWithAuth:
         )
         
         admin_headers = self.auth_helper.get_administrative_headers()
-        response = client.post("/users/", json=user_data, headers=admin_headers)
+        response = self.client.post("/users/", json=user_data, headers=admin_headers)
         
         assert response.status_code == 201
         data = response.json()
@@ -102,7 +102,7 @@ class TestUserEndpointsWithAuth:
         )
         
         instructor_headers = self.auth_helper.get_instructor_headers()
-        response = client.post("/users/", json=user_data, headers=instructor_headers)
+        response = self.client.post("/users/", json=user_data, headers=instructor_headers)
         
         assert response.status_code == 403
 
@@ -114,7 +114,7 @@ class TestUserEndpointsWithAuth:
         )
         
         apprentice_headers = self.auth_helper.get_apprentice_headers()
-        response = client.post("/users/", json=user_data, headers=apprentice_headers)
+        response = self.client.post("/users/", json=user_data, headers=apprentice_headers)
         
         assert response.status_code == 403
 
@@ -122,14 +122,14 @@ class TestUserEndpointsWithAuth:
         """Test crear usuario sin autenticación"""
         user_data = TestDataFactory.create_user_data()
         
-        response = client.post("/users/", json=user_data)
+        response = self.client.post("/users/", json=user_data)
         
         assert response.status_code == 401
 
     def test_create_user_duplicate_email(self):
         """Test crear usuario con email duplicado"""
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.post("/users/", json=self.base_user_data, headers=admin_headers)
+        response = self.client.post("/users/", json=self.base_user_data, headers=admin_headers)
         
         assert response.status_code == 400
         assert "already exists" in response.json()["detail"].lower()
@@ -140,7 +140,7 @@ class TestUserEndpointsWithAuth:
         invalid_user_data["password"] = "weak"
         
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.post("/users/", json=invalid_user_data, headers=admin_headers)
+        response = self.client.post("/users/", json=invalid_user_data, headers=admin_headers)
         
         assert response.status_code in [400, 422]
         detail = response.json()["detail"]
@@ -150,7 +150,7 @@ class TestUserEndpointsWithAuth:
     def test_get_user_by_id_success_as_admin(self):
         """Test obtener usuario por ID exitosamente como ADMIN"""
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.get(f"/users/{self.user_id}", headers=admin_headers)
+        response = self.client.get(f"/users/{self.user_id}", headers=admin_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -161,7 +161,7 @@ class TestUserEndpointsWithAuth:
     def test_get_user_by_id_success_as_instructor(self):
         """Test obtener usuario por ID exitosamente como INSTRUCTOR"""
         instructor_headers = self.auth_helper.get_instructor_headers()
-        response = client.get(f"/users/{self.user_id}", headers=instructor_headers)
+        response = self.client.get(f"/users/{self.user_id}", headers=instructor_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -170,7 +170,7 @@ class TestUserEndpointsWithAuth:
     def test_get_user_by_id_forbidden_as_apprentice(self):
         """Test obtener usuario por ID prohibido como APPRENTICE"""
         apprentice_headers = self.auth_helper.get_apprentice_headers()
-        response = client.get(f"/users/{self.user_id}", headers=apprentice_headers)
+        response = self.client.get(f"/users/{self.user_id}", headers=apprentice_headers)
         
         assert response.status_code == 403
 
@@ -178,20 +178,20 @@ class TestUserEndpointsWithAuth:
         """Test obtener usuario con ID inexistente"""
         fake_id = "550e8400-e29b-41d4-a716-446655440000"
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.get(f"/users/{fake_id}", headers=admin_headers)
+        response = self.client.get(f"/users/{fake_id}", headers=admin_headers)
         
         assert response.status_code == 404
 
     def test_get_user_by_id_unauthorized(self):
         """Test obtener usuario sin autenticación"""
-        response = client.get(f"/users/{self.user_id}")
+        response = self.client.get(f"/users/{self.user_id}")
         
         assert response.status_code == 401
 
     def test_list_users_success_as_admin(self):
         """Test listar usuarios exitosamente como ADMIN"""
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.get("/users/", headers=admin_headers)
+        response = self.client.get("/users/", headers=admin_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -205,7 +205,7 @@ class TestUserEndpointsWithAuth:
     def test_list_users_success_as_instructor(self):
         """Test listar usuarios exitosamente como INSTRUCTOR"""
         instructor_headers = self.auth_helper.get_instructor_headers()
-        response = client.get("/users/", headers=instructor_headers)
+        response = self.client.get("/users/", headers=instructor_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -214,14 +214,14 @@ class TestUserEndpointsWithAuth:
     def test_list_users_forbidden_as_apprentice(self):
         """Test listar usuarios prohibido como APPRENTICE"""
         apprentice_headers = self.auth_helper.get_apprentice_headers()
-        response = client.get("/users/", headers=apprentice_headers)
+        response = self.client.get("/users/", headers=apprentice_headers)
         
         assert response.status_code == 403
 
     def test_list_users_with_pagination(self):
         """Test listar usuarios con paginación"""
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.get("/users/?page=1&page_size=5", headers=admin_headers)
+        response = self.client.get("/users/?page=1&page_size=5", headers=admin_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -232,7 +232,7 @@ class TestUserEndpointsWithAuth:
     def test_list_users_with_filters(self):
         """Test listar usuarios con filtros"""
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.get("/users/?role=apprentice&is_active=true", headers=admin_headers)
+        response = self.client.get("/users/?role=apprentice&is_active=true", headers=admin_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -245,11 +245,11 @@ class TestUserEndpointsWithAuth:
         admin_headers = self.auth_helper.get_admin_headers()
         
         # Primero desactivar el usuario
-        deactivate_response = client.patch(f"/users/{self.user_id}/deactivate", headers=admin_headers)
+        deactivate_response = self.client.patch(f"/users/{self.user_id}/deactivate", headers=admin_headers)
         assert deactivate_response.status_code == 200
         
         # Ahora activarlo
-        response = client.patch(f"/users/{self.user_id}/activate", headers=admin_headers)
+        response = self.client.patch(f"/users/{self.user_id}/activate", headers=admin_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -259,14 +259,14 @@ class TestUserEndpointsWithAuth:
     def test_activate_user_forbidden_as_instructor(self):
         """Test activar usuario prohibido como INSTRUCTOR"""
         instructor_headers = self.auth_helper.get_instructor_headers()
-        response = client.patch(f"/users/{self.user_id}/activate", headers=instructor_headers)
+        response = self.client.patch(f"/users/{self.user_id}/activate", headers=instructor_headers)
         
         assert response.status_code == 403
 
     def test_deactivate_user_success_as_admin(self):
         """Test desactivar usuario exitosamente como ADMIN"""
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.patch(f"/users/{self.user_id}/deactivate", headers=admin_headers)
+        response = self.client.patch(f"/users/{self.user_id}/deactivate", headers=admin_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -276,7 +276,7 @@ class TestUserEndpointsWithAuth:
     def test_deactivate_user_forbidden_as_instructor(self):
         """Test desactivar usuario prohibido como INSTRUCTOR"""
         instructor_headers = self.auth_helper.get_instructor_headers()
-        response = client.patch(f"/users/{self.user_id}/deactivate", headers=instructor_headers)
+        response = self.client.patch(f"/users/{self.user_id}/deactivate", headers=instructor_headers)
         
         assert response.status_code == 403
 
@@ -289,7 +289,7 @@ class TestUserEndpointsWithAuth:
         
         # Usar token del usuario base (apprentice)
         base_user_headers = self.auth_helper.get_auth_headers(self.base_user_token)
-        response = client.patch(f"/users/{self.user_id}/change-password", 
+        response = self.client.patch(f"/users/{self.user_id}/change-password", 
                               json=password_data, headers=base_user_headers)
         
         assert response.status_code == 200
@@ -305,7 +305,7 @@ class TestUserEndpointsWithAuth:
         )
         
         admin_headers = self.auth_helper.get_admin_headers()
-        response = client.patch(f"/users/{self.user_id}/change-password", 
+        response = self.client.patch(f"/users/{self.user_id}/change-password", 
                               json=password_data, headers=admin_headers)
         
         assert response.status_code == 200
@@ -315,14 +315,14 @@ class TestUserEndpointsWithAuth:
         # Crear otro usuario para el test
         admin_headers = self.auth_helper.get_admin_headers()
         other_user_data = TestDataFactory.create_user_data(prefix="other")
-        other_response = client.post("/users/", json=other_user_data, headers=admin_headers)
+        other_response = self.client.post("/users/", json=other_user_data, headers=admin_headers)
         other_user_id = other_response.json()["id"]
         
         password_data = TestDataFactory.create_password_change_data()
         
         # Intentar cambiar contraseña de otro usuario como apprentice
         base_user_headers = self.auth_helper.get_auth_headers(self.base_user_token)
-        response = client.patch(f"/users/{other_user_id}/change-password", 
+        response = self.client.patch(f"/users/{other_user_id}/change-password", 
                               json=password_data, headers=base_user_headers)
         
         assert response.status_code == 403
@@ -335,7 +335,7 @@ class TestUserEndpointsWithAuth:
         )
         
         base_user_headers = self.auth_helper.get_auth_headers(self.base_user_token)
-        response = client.patch(f"/users/{self.user_id}/change-password", 
+        response = self.client.patch(f"/users/{self.user_id}/change-password", 
                               json=password_data, headers=base_user_headers)
         
         assert response.status_code == 400
@@ -348,7 +348,7 @@ class TestUserEndpointsWithAuth:
         )
         
         base_user_headers = self.auth_helper.get_auth_headers(self.base_user_token)
-        response = client.patch(f"/users/{self.user_id}/change-password", 
+        response = self.client.patch(f"/users/{self.user_id}/change-password", 
                               json=password_data, headers=base_user_headers)
         
         assert response.status_code in [400, 422]
@@ -363,23 +363,23 @@ class TestUserEndpointsWithAuth:
             prefix="lifecycle"
         )
         
-        create_response = client.post("/users/", json=user_data, headers=admin_headers)
+        create_response = self.client.post("/users/", json=user_data, headers=admin_headers)
         assert create_response.status_code == 201
         user = create_response.json()
         user_id = user["id"]
         
         # 2. Obtener usuario
-        get_response = client.get(f"/users/{user_id}", headers=admin_headers)
+        get_response = self.client.get(f"/users/{user_id}", headers=admin_headers)
         assert get_response.status_code == 200
         assert get_response.json()["email"] == user_data["email"]
         
         # 3. Desactivar usuario
-        deactivate_response = client.patch(f"/users/{user_id}/deactivate", headers=admin_headers)
+        deactivate_response = self.client.patch(f"/users/{user_id}/deactivate", headers=admin_headers)
         assert deactivate_response.status_code == 200
         assert deactivate_response.json()["is_active"] is False
         
         # 4. Activar usuario
-        activate_response = client.patch(f"/users/{user_id}/activate", headers=admin_headers)
+        activate_response = self.client.patch(f"/users/{user_id}/activate", headers=admin_headers)
         assert activate_response.status_code == 200
         assert activate_response.json()["is_active"] is True
         
@@ -388,12 +388,12 @@ class TestUserEndpointsWithAuth:
             current_password=user_data["password"],
             new_password="NewLifecyclePass456!"
         )
-        password_response = client.patch(f"/users/{user_id}/change-password", 
+        password_response = self.client.patch(f"/users/{user_id}/change-password", 
                                        json=password_data, headers=admin_headers)
         assert password_response.status_code == 200
         
         # 6. Verificar usuario final
-        final_get_response = client.get(f"/users/{user_id}", headers=admin_headers)
+        final_get_response = self.client.get(f"/users/{user_id}", headers=admin_headers)
         assert final_get_response.status_code == 200
         final_user = final_get_response.json()
         assert final_user["is_active"] is True
@@ -418,11 +418,11 @@ class TestUserEndpointsWithAuth:
             json_data = payload[0] if payload else {}
             
             if method == "GET":
-                response = client.get(endpoint)
+                response = self.client.get(endpoint)
             elif method == "POST":
-                response = client.post(endpoint, json=json_data)
+                response = self.client.post(endpoint, json=json_data)
             elif method == "PATCH":
-                response = client.patch(endpoint, json=json_data)
+                response = self.client.patch(endpoint, json=json_data)
             
             assert response.status_code == 401, f"Endpoint {method} {endpoint} debe requerir autenticación"
 

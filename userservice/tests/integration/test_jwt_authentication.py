@@ -9,47 +9,39 @@ from fastapi.testclient import TestClient
 
 from main import app
 from app.domain.value_objects.user_role import UserRole
-
-
-client = TestClient(app)
+from tests.utils.test_helpers import AuthTestHelper, TestDataFactory
 
 
 class TestJWTAuthentication:
     """Pruebas de autenticación JWT para endpoints de gestión de usuarios."""
 
     @pytest.fixture(autouse=True)
-    async def setup_test_data(self):
+    async def setup_test_data(self, test_client, db_tables_ready):
         """Configurar datos de prueba."""
-        # Crear usuarios de prueba con diferentes roles
-        self.admin_user_data = {
-            "first_name": "Admin",
-            "last_name": "User",
-            "email": f"admin.{uuid4().hex[:8]}@test.com",
-            "document_number": f"ADM{uuid4().hex[:8].upper()}",
-            "document_type": "CC",
-            "password": "AdminPass123!",
-            "role": UserRole.ADMIN.value
-        }
+        # Usar el cliente de test del fixture
+        self.client = test_client
         
-        self.instructor_user_data = {
-            "first_name": "Instructor",
-            "last_name": "User", 
-            "email": f"instructor.{uuid4().hex[:8]}@test.com",
-            "document_number": f"INS{uuid4().hex[:8].upper()}",
-            "document_type": "CC",
-            "password": "InstructorPass123!",
-            "role": UserRole.INSTRUCTOR.value
-        }
+        # Inicializar helper de autenticación
+        self.auth_helper = AuthTestHelper(self.client)
         
-        self.administrative_user_data = {
-            "first_name": "Administrative",
-            "last_name": "User",
-            "email": f"admin.{uuid4().hex[:8]}@test.com",
-            "document_number": f"ADT{uuid4().hex[:8].upper()}",
-            "document_type": "CC", 
-            "password": "AdminPass123!",
-            "role": UserRole.ADMINISTRATIVE.value
-        }
+        # Crear admin usando el seeder
+        await self.auth_helper.seed_admin_user()
+        
+        # Crear usuarios de prueba con diferentes roles usando TestDataFactory
+        self.admin_user_data = TestDataFactory.create_user_data(
+            role=UserRole.ADMIN,
+            prefix="testadmin"
+        )
+        
+        self.instructor_user_data = TestDataFactory.create_user_data(
+            role=UserRole.INSTRUCTOR,
+            prefix="testinstr"
+        )
+        
+        self.administrative_user_data = TestDataFactory.create_user_data(
+            role=UserRole.ADMINISTRATIVE,
+            prefix="testadmins"
+        )
         
         self.apprentice_user_data = {
             "first_name": "Apprentice",
