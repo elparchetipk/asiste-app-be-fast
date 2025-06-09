@@ -8,54 +8,39 @@ from fastapi.testclient import TestClient
 
 from main import app
 from app.domain.value_objects.user_role import UserRole
-
-
-client = TestClient(app)
+from tests.utils.test_helpers import AuthTestHelper, TestDataFactory
 
 
 class TestJWTAuthenticationFunctional:
     """Pruebas funcionales completas de autenticación JWT."""
     
     @pytest.fixture(autouse=True)
-    def setup_test_data(self):
+    async def setup_test_data(self, test_client, db_tables_ready):
         """Configurar datos de prueba usando la API existente."""
-        # Para estas pruebas, vamos a asumir que ya existe un usuario admin
-        # que puede ser usado para las pruebas. En un entorno real, esto se
-        # configuraría con seeders o datos iniciales.
+        # Usar el cliente de test del fixture
+        self.client = test_client
+        
+        # Inicializar helper de autenticación
+        self.auth_helper = AuthTestHelper(self.client)
+        
+        # Crear admin usando el seeder
+        await self.auth_helper.seed_admin_user()
         
         # Datos de usuarios que intentaremos crear a través de la API
         self.test_users = {
-            "admin": {
-                "email": f"admin.{uuid4().hex[:8]}@test.com",
-                "password": "AdminPass123!",
-                "data": {
-                    "first_name": "Admin",
-                    "last_name": "Test",
-                    "email": f"admin.{uuid4().hex[:8]}@test.com",
-                    "document_number": f"ADM{uuid4().hex[:8].upper()}",
-                    "document_type": "CC",
-                    "password": "AdminPass123!",
-                    "role": UserRole.ADMIN.value
-                }
-            },
-            "instructor": {
-                "email": f"instructor.{uuid4().hex[:8]}@test.com", 
-                "password": "InstructorPass123!",
-                "data": {
-                    "first_name": "Instructor",
-                    "last_name": "Test",
-                    "email": f"instructor.{uuid4().hex[:8]}@test.com",
-                    "document_number": f"INS{uuid4().hex[:8].upper()}",
-                    "document_type": "CC",
-                    "password": "InstructorPass123!",
-                    "role": UserRole.INSTRUCTOR.value
-                }
-            },
-            "apprentice": {
-                "email": f"apprentice.{uuid4().hex[:8]}@test.com",
-                "password": "ApprenticePass123!",
-                "data": {
-                    "first_name": "Apprentice",
+            "admin": TestDataFactory.create_user_data(
+                role=UserRole.ADMIN,
+                prefix="testadmin"
+            ),
+            "instructor": TestDataFactory.create_user_data(
+                role=UserRole.INSTRUCTOR,
+                prefix="testinstr"
+            ),
+            "apprentice": TestDataFactory.create_user_data(
+                role=UserRole.APPRENTICE,
+                prefix="testapprent"
+            )
+        }
                     "last_name": "Test",
                     "email": f"apprentice.{uuid4().hex[:8]}@test.com",
                     "document_number": f"APP{uuid4().hex[:8].upper()}",

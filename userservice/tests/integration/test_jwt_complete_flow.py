@@ -33,16 +33,16 @@ class TestJWTCompleteFlow:
         """
         
         # 1. Verificar que los endpoints están protegidos
-        response = client.get("/users/")
+        response = self.client.get("/users/")
         assert response.status_code in [401, 403], "Los endpoints deben estar protegidos"
         
         # 2. Verificar que tokens inválidos son rechazados
         invalid_headers = {"Authorization": "Bearer invalid_token"}
-        response = client.get("/users/", headers=invalid_headers)
+        response = self.client.get("/users/", headers=invalid_headers)
         assert response.status_code == 401, "Tokens inválidos deben ser rechazados"
         
         # 3. Verificar que el endpoint de login existe
-        response = client.post("/auth/login", json={
+        response = self.client.post("/auth/login", json={
             "username": "nonexistent@test.com",
             "password": "wrongpassword"
         })
@@ -53,7 +53,7 @@ class TestJWTCompleteFlow:
         """Verificar que los endpoints de autenticación son accesibles."""
         
         # Verificar que el endpoint de login existe y responde
-        response = client.post("/auth/login", json={
+        response = self.client.post("/auth/login", json={
             "username": "test@example.com",
             "password": "testpassword"
         })
@@ -61,7 +61,7 @@ class TestJWTCompleteFlow:
         assert response.status_code != 404, "El endpoint de login debe existir"
         
         # Verificar que el endpoint de validación existe
-        response = client.get("/auth/validate", headers={
+        response = self.client.get("/auth/validate", headers={
             "Authorization": "Bearer invalid_token"
         })
         # Debe retornar error de token, no error 404
@@ -95,11 +95,11 @@ class TestJWTCompleteFlow:
         
         for method, endpoint, payload, description in endpoints_tests:
             if method == "GET":
-                response = client.get(endpoint)
+                response = self.client.get(endpoint)
             elif method == "POST":
-                response = client.post(endpoint, json=payload)
+                response = self.client.post(endpoint, json=payload)
             elif method == "PATCH":
-                response = client.patch(endpoint, json=payload)
+                response = self.client.patch(endpoint, json=payload)
             
             # Todos deben requerir autenticación
             assert response.status_code in [401, 403], f"{description} debe requerir autenticación"
@@ -116,7 +116,7 @@ class TestJWTCompleteFlow:
         ]
         
         for headers in test_cases:
-            response = client.get("/users/", headers=headers)
+            response = self.client.get("/users/", headers=headers)
             assert response.status_code in [401, 403], f"Header inválido debe ser rechazado: {headers}"
 
     def test_role_based_access_structure_exists(self):
@@ -138,15 +138,15 @@ class TestJWTCompleteFlow:
         }
         
         # Todos estos endpoints deben estar protegidos
-        response = client.post("/users/", json=user_payload)
+        response = self.client.post("/users/", json=user_payload)
         assert response.status_code in [401, 403], "Crear usuario debe estar protegido"
         
         test_user_id = str(uuid4())
         
-        response = client.patch(f"/users/{test_user_id}/activate")
+        response = self.client.patch(f"/users/{test_user_id}/activate")
         assert response.status_code in [401, 403], "Activar usuario debe estar protegido"
         
-        response = client.patch(f"/users/{test_user_id}/deactivate")
+        response = self.client.patch(f"/users/{test_user_id}/deactivate")
         assert response.status_code in [401, 403], "Desactivar usuario debe estar protegido"
 
 
