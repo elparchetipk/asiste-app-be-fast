@@ -9,6 +9,12 @@ from .user_dtos import (
     TokenResponseDTO,
     UserListDTO,
     UserFilterDTO,
+    # PASO 4: Admin DTOs
+    AdminUpdateUserDTO,
+    UserDetailDTO,
+    BulkUploadUserDTO,
+    BulkUploadResultDTO,
+    DeleteUserResultDTO,
 )
 
 __all__ = [
@@ -20,4 +26,10 @@ __all__ = [
     "TokenResponseDTO",
     "UserListDTO",
     "UserFilterDTO",
+    # PASO 4: Admin DTOs
+    "AdminUpdateUserDTO",
+    "UserDetailDTO",
+    "BulkUploadUserDTO",
+    "BulkUploadResultDTO",
+    "DeleteUserResultDTO",
 ]
