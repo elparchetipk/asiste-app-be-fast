@@ -40,18 +40,18 @@ class TestExampleIntegration:
         
         admin_headers = self.auth_helper.get_admin_headers()
         response = self.client.post("/users/", json=user_data, headers=admin_headers)
-    
-    # Debug: Print response details
-    print(f"Status code: {response.status_code}")
-    print(f"Response body: {response.json()}")
-    
-    # Should succeed if not exists or return conflict if already exists
-    assert response.status_code in [201, 409, 400]  # Allow 400 for business logic errors
-    
-    if response.status_code == 201:
-        data = response.json()
-        assert data["email"] == user_data["email"]
-        assert data["first_name"] == user_data["first_name"]
-        assert data["last_name"] == user_data["last_name"]
-        assert "id" in data
-        assert "created_at" in data
+        
+        # Debug: Print response details
+        print(f"Status code: {response.status_code}")
+        print(f"Response body: {response.json()}")
+        
+        # Should succeed if not exists or return conflict if already exists
+        assert response.status_code in [201, 409, 400]  # Allow 400 for business logic errors
+        
+        if response.status_code == 201:
+            data = response.json()
+            assert data["email"] == user_data["email"]
+            assert data["first_name"] == user_data["first_name"]
+            assert data["last_name"] == user_data["last_name"]
+            assert "id" in data
+            assert "created_at" in data
