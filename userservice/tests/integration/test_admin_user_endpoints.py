@@ -105,7 +105,7 @@ class TestAdminUserEndpoints:
         update_data = {
             "first_name": "Updated",
             "last_name": "Name",
-            "role": "INSTRUCTOR",
+            "role": "instructor",
             "is_active": True
         }
         
@@ -224,8 +224,8 @@ class TestAdminUserEndpoints:
         
         # Create CSV content
         csv_content = """first_name,last_name,email,document_number,document_type,role,phone
-Maria,Garcia,maria.garcia@example.com,22222222,CC,INSTRUCTOR,+573001234567
-Carlos,Lopez,carlos.lopez@example.com,33333333,CC,APPRENTICE,+573007654321"""
+Maria,Garcia,maria.garcia@example.com,22222222,CC,instructor,+573001234567
+Carlos,Lopez,carlos.lopez@example.com,33333333,CC,apprentice,+573007654321"""
         
         # Encode to base64
         encoded_content = base64.b64encode(csv_content.encode('utf-8')).decode('utf-8')
@@ -263,9 +263,9 @@ Carlos,Lopez,carlos.lopez@example.com,33333333,CC,APPRENTICE,+573007654321"""
         
         # Create CSV with invalid data
         csv_content = """first_name,last_name,email,document_number,document_type,role
-Valid,User,valid.user@example.com,44444444,CC,APPRENTICE
-Invalid,Email,invalid-email,55555555,CC,APPRENTICE
-Duplicate,Document,duplicate.user@example.com,44444444,CC,INSTRUCTOR"""
+Valid,User,valid.user@example.com,44444444,CC,apprentice
+Invalid,Email,invalid-email,55555555,CC,apprentice
+Duplicate,Document,duplicate.user@example.com,44444444,CC,instructor"""
         
         encoded_content = base64.b64encode(csv_content.encode('utf-8')).decode('utf-8')
         
@@ -326,7 +326,7 @@ class TestAdminUserEndpointsIntegration:
         # 1. Create user via bulk upload
         import base64
         
-        csv_content = "first_name,last_name,email,document_number,document_type,role\\nWorkflow,Test,workflow.test@example.com,99999999,CC,APPRENTICE"
+        csv_content = "first_name,last_name,email,document_number,document_type,role\\nWorkflow,Test,workflow.test@example.com,99999999,CC,apprentice"
         encoded_content = base64.b64encode(csv_content.encode('utf-8')).decode('utf-8')
         
         upload_response = self.client.post(
@@ -354,13 +354,13 @@ class TestAdminUserEndpointsIntegration:
         # 3. Update user
         update_response = self.client.put(
             f"/api/v1/admin/users/{user_id}",
-            json={"role": "INSTRUCTOR", "first_name": "Updated"},
+            json={"role": "instructor", "first_name": "Updated"},
             headers=self.admin_headers
         )
         
         assert update_response.status_code == 200
         updated_data = update_response.json()
-        assert updated_data["role"] == "INSTRUCTOR"
+        assert updated_data["role"] == "instructor"
         assert updated_data["first_name"] == "Updated"
         
         # 4. Delete user
