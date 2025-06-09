@@ -216,9 +216,9 @@ async def bulk_upload_users(
 
 @router.post("/upload-file", response_model=BulkUploadResponse)
 async def bulk_upload_users_file(
-    file: UploadFile = File(..., description="CSV file with user data"),
     bulk_upload_use_case: Annotated[BulkUploadUsersUseCase, Depends(get_bulk_upload_users_use_case)],
-    current_user: Annotated[User, Depends(get_admin_user)]
+    current_user: Annotated[User, Depends(get_admin_user)],
+    file: UploadFile = File(..., description="CSV file with user data")
 ):
     """
     Carga masiva de usuarios desde archivo CSV subido directamente.
