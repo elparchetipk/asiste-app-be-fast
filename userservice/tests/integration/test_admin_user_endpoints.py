@@ -31,12 +31,14 @@ class TestAdminUserEndpoints:
         
         # Create test user for admin operations
         import uuid
+        import random
         unique_suffix = str(uuid.uuid4())[:8]
+        random_doc_number = f"{random.randint(10000000, 99999999)}"
         self.test_user_data = {
             "first_name": "Test",
             "last_name": "User",
             "email": f"test.user.{unique_suffix}@example.com",
-            "document_number": f"8765{unique_suffix[:4]}",
+            "document_number": random_doc_number,
             "document_type": "CC",
             "password": "TestUser123!",
             "role": "apprentice"
@@ -328,9 +330,11 @@ class TestAdminUserEndpointsIntegration:
         # 1. Create user via bulk upload
         import base64
         import uuid
+        import random
         
         unique_suffix = str(uuid.uuid4())[:8]
-        csv_content = f"first_name,last_name,email,document_number,document_type,role\\nWorkflow,Test,workflow.test.{unique_suffix}@example.com,999{unique_suffix[:5]},CC,apprentice"
+        random_doc_number = f"{random.randint(10000000, 99999999)}"
+        csv_content = f"first_name,last_name,email,document_number,document_type,role\\nWorkflow,Test,workflow.test.{unique_suffix}@example.com,{random_doc_number},CC,apprentice"
         encoded_content = base64.b64encode(csv_content.encode('utf-8')).decode('utf-8')
         
         upload_response = self.client.post(
