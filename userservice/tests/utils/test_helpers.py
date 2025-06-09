@@ -180,7 +180,7 @@ class AuthTestHelper:
     def get_auth_token(self, email: str, password: str) -> Optional[str]:
         """Obtener token de autenticación."""
         try:
-            response = self.client.post("/auth/login", json={
+            response = self.client.post("/api/v1/auth/login", json={
                 "email": email,
                 "password": password
             })
