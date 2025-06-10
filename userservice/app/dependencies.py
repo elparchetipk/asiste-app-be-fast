@@ -52,7 +52,7 @@ async def get_user_repository(
     return SQLAlchemyUserRepository(session)
 
 
-# PASO 6: Refresh Token Repository dependency
+# PASO 6: Refresh token repository dependency
 async def get_refresh_token_repository(
     session: AsyncSession = Depends(get_db_session)
 ) -> RefreshTokenRepositoryInterface:

@@ -148,7 +148,7 @@ class RefreshTokenRequest(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                "refresh_token": "def502004a0f8b7c4e9d..."
             }
         }
     )
@@ -511,7 +511,7 @@ class DeleteUserResponse(BaseModel):
     )
 
 
-# PASO 6: Refresh Token Schemas
+# PASO 6: Refresh Token Schemas for HU-BE-003
 
 class RefreshTokenRequest(BaseModel):
     """Schema for refresh token request."""
@@ -521,7 +521,7 @@ class RefreshTokenRequest(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                "refresh_token": "def502004a0f8b7c4e9d..."
             }
         }
     )
@@ -539,7 +539,7 @@ class RefreshTokenResponse(BaseModel):
         json_schema_extra={
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "refresh_token": "def502004a0f8b7c4e9d...",
                 "token_type": "bearer",
                 "expires_in": 3600
             }

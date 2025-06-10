@@ -35,7 +35,7 @@ class UserModel(Base):
     reset_password_token = Column(String(100), nullable=True, index=True)
     reset_password_token_expires_at = Column(DateTime, nullable=True)
     
-    # PASO 6: Relationship to refresh tokens
+    # PASO 6: Relationship with refresh tokens
     refresh_tokens = relationship("RefreshTokenModel", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
