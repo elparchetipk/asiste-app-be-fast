@@ -7,6 +7,8 @@ from .user_dtos import (
     UserResponseDTO,
     LoginDTO,
     TokenResponseDTO,
+    RefreshTokenDTO,  # PASO 6: Added
+    RefreshTokenResponseDTO,  # PASO 6: Added
     UserListDTO,
     UserFilterDTO,
     # PASO 4: Admin DTOs
@@ -28,6 +30,8 @@ __all__ = [
     "UserResponseDTO",
     "LoginDTO",
     "TokenResponseDTO",
+    "RefreshTokenDTO",  # PASO 6: Added
+    "RefreshTokenResponseDTO",  # PASO 6: Added
     "UserListDTO",
     "UserFilterDTO",
     # PASO 4: Admin DTOs

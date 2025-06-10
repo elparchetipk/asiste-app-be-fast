@@ -4,7 +4,7 @@ from typing import Annotated
 
 from app.dependencies import (
     get_login_use_case,
-    # get_refresh_token_use_case,
+    get_refresh_token_use_case,  # PASO 6: Added
     get_logout_use_case,
     get_validate_token_use_case,
     # get_change_password_use_case
@@ -14,7 +14,7 @@ from app.dependencies import (
 )
 from app.application.use_cases.auth_use_cases import (
     LoginUseCase,
-    # RefreshTokenUseCase,
+    RefreshTokenUseCase,  # PASO 6: Added
     LogoutUseCase,
     ValidateTokenUseCase,
     # ChangePasswordUseCase
@@ -25,6 +25,7 @@ from app.application.use_cases.auth_use_cases import (
 from app.application.dtos.user_dtos import (
     LoginDTO,
     TokenResponseDTO,
+    RefreshTokenDTO,  # PASO 6: Added
     ForgotPasswordDTO,
     ResetPasswordDTO,
     ForceChangePasswordDTO,
@@ -32,6 +33,8 @@ from app.application.dtos.user_dtos import (
 from app.presentation.schemas.user_schemas import (
     LoginRequest,
     LoginResponse,
+    RefreshTokenRequest,  # PASO 6: Added
+    RefreshTokenResponse,  # PASO 6: Added
     MessageResponse,
     UserResponse,
     ForgotPasswordRequest,
@@ -158,32 +161,51 @@ async def validate_token(
     )
 
 
-# @router.post("/refresh", response_model=LoginResponse)
-# async def refresh_token(
-#     request: RefreshTokenRequest,
-#     refresh_use_case: Annotated[RefreshTokenUseCase, Depends(get_refresh_token_use_case)]
-# ):
-#     """
-#     Renovar token de acceso usando el refresh token.
-#     
-#     - **refresh_token**: Token de refresh válido
-#     """
-#     try:
-#         dto = RefreshTokenRequestDTO(refresh_token=request.refresh_token)
-#         result = await refresh_use_case.execute(dto)
-#         return LoginResponse(
-#             access_token=result.access_token,
-#             refresh_token=result.refresh_token,
-#             token_type=result.token_type,
-#             expires_in=result.expires_in,
-#             user=result.user
-#         )
-#     except InvalidTokenError as e:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail=str(e),
-#             headers={"WWW-Authenticate": "Bearer"}
-#         )
+# PASO 6: Refresh token endpoint for HU-BE-003
+@router.post("/refresh", response_model=RefreshTokenResponse)
+async def refresh_token(
+    request: RefreshTokenRequest,
+    refresh_token_use_case: Annotated[RefreshTokenUseCase, Depends(get_refresh_token_use_case)]
+):
+    """
+    Refresh access token using valid refresh token.
+    
+    - **refresh_token**: Valid refresh token to exchange for new access token
+    """
+    try:
+        refresh_dto = RefreshTokenDTO(
+            refresh_token=request.refresh_token
+        )
+        result = await refresh_token_use_case.execute(refresh_dto)
+        
+        return RefreshTokenResponse(
+            access_token=result.access_token,
+            refresh_token=result.refresh_token,
+            token_type=result.token_type,
+            expires_in=result.expires_in
+        )
+    except InvalidTokenError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    except UserNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except UserInactiveError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
 
 
 # @router.post("/logout", response_model=MessageResponse)

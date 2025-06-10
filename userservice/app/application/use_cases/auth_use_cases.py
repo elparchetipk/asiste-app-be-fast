@@ -36,10 +36,12 @@ class LoginUseCase:
     def __init__(
         self,
         user_repository: UserRepositoryInterface,
+        refresh_token_repository: RefreshTokenRepositoryInterface,  # PASO 6: Added
         password_service: PasswordServiceInterface,
         token_service: TokenServiceInterface,
     ):
         self._user_repository = user_repository
+        self._refresh_token_repository = refresh_token_repository  # PASO 6: Added
         self._password_service = password_service
         self._token_service = token_service
     
@@ -74,6 +76,10 @@ class LoginUseCase:
             role=user.role.value
         )
         
+        # PASO 6: Create and save refresh token
+        refresh_token = RefreshToken.create_for_user(user.id)
+        await self._refresh_token_repository.save(refresh_token)
+        
         # Create user response DTO
         user_response = UserResponseDTO(
             id=user.id,
@@ -92,6 +98,7 @@ class LoginUseCase:
         
         return TokenResponseDTO(
             access_token=access_token,
+            refresh_token=refresh_token.token,  # PASO 6: Added
             token_type="bearer",
             expires_in=3600,  # 1 hour
             user=user_response,
