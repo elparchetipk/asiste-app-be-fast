@@ -122,3 +122,36 @@ class JWTTokenService(TokenServiceInterface):
             return False
             
         return token_issued_at.timestamp() < user_blacklist_time
+    
+    # PASO 6: Métodos específicos para refresh tokens
+    
+    def validate_refresh_token(self, refresh_token: str) -> Dict[str, Any]:
+        """Validate and decode a refresh token."""
+        try:
+            payload = self.decode_token(refresh_token)
+            
+            # Verify this is a refresh token
+            if payload.get("type") != "refresh":
+                raise DomainInvalidTokenError("Invalid token type")
+            
+            # Check if token is revoked
+            if self.is_token_revoked(refresh_token):
+                raise DomainInvalidTokenError("Token has been revoked")
+            
+            return payload
+            
+        except InvalidTokenError as e:
+            raise DomainInvalidTokenError(f"Invalid refresh token: {str(e)}")
+    
+    def get_user_id_from_refresh_token(self, refresh_token: str) -> UUID:
+        """Extract user ID from refresh token."""
+        payload = self.validate_refresh_token(refresh_token)
+        user_id_str = payload.get("sub")
+        
+        if not user_id_str:
+            raise DomainInvalidTokenError("Token missing user ID")
+        
+        try:
+            return UUID(user_id_str)
+        except ValueError:
+            raise DomainInvalidTokenError("Invalid user ID format in token")

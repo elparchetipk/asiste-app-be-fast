@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 from sqlalchemy import Column, String, Boolean, DateTime, Enum
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 
 from ...domain import UserRole
 
@@ -34,6 +34,9 @@ class UserModel(Base):
     # PASO 5: Password reset token support
     reset_password_token = Column(String(100), nullable=True, index=True)
     reset_password_token_expires_at = Column(DateTime, nullable=True)
+    
+    # PASO 6: Relationship to refresh tokens
+    refresh_tokens = relationship("RefreshTokenModel", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<UserModel(id={self.id}, email={self.email}, role={self.role})>"

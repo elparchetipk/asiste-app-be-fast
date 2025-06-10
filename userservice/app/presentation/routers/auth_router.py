@@ -158,32 +158,51 @@ async def validate_token(
     )
 
 
-# @router.post("/refresh", response_model=LoginResponse)
-# async def refresh_token(
-#     request: RefreshTokenRequest,
-#     refresh_use_case: Annotated[RefreshTokenUseCase, Depends(get_refresh_token_use_case)]
-# ):
-#     """
-#     Renovar token de acceso usando el refresh token.
-#     
-#     - **refresh_token**: Token de refresh válido
-#     """
-#     try:
-#         dto = RefreshTokenRequestDTO(refresh_token=request.refresh_token)
-#         result = await refresh_use_case.execute(dto)
-#         return LoginResponse(
-#             access_token=result.access_token,
-#             refresh_token=result.refresh_token,
-#             token_type=result.token_type,
-#             expires_in=result.expires_in,
-#             user=result.user
-#         )
-#     except InvalidTokenError as e:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail=str(e),
-#             headers={"WWW-Authenticate": "Bearer"}
-#         )
+# PASO 6: Refresh Token Endpoint
+
+@router.post("/refresh", response_model=RefreshTokenResponse)
+async def refresh_token(
+    request: RefreshTokenRequest,
+    refresh_token_use_case: Annotated[RefreshTokenUseCase, Depends(get_refresh_token_use_case)]
+):
+    """
+    Refresh access token using a valid refresh token.
+    
+    - **refresh_token**: Valid refresh token to exchange for new access token
+    """
+    try:
+        refresh_dto = RefreshTokenDTO(
+            refresh_token=request.refresh_token
+        )
+        result = await refresh_token_use_case.execute(refresh_dto)
+        
+        return RefreshTokenResponse(
+            access_token=result.access_token,
+            refresh_token=result.refresh_token,
+            token_type=result.token_type,
+            expires_in=result.expires_in
+        )
+    except InvalidTokenError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    except UserNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except UserInactiveError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error refreshing token"
+        )
 
 
 # @router.post("/logout", response_model=MessageResponse)

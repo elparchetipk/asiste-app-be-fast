@@ -143,7 +143,7 @@ class ForceChangePasswordRequest(BaseModel):
 class RefreshTokenRequest(BaseModel):
     """Schema for refresh token request."""
     
-    refresh_token: str = Field(..., description="Refresh token")
+    refresh_token: str = Field(..., description="Refresh token to exchange for new access token")
     
     model_config = ConfigDict(
         json_schema_extra={
@@ -237,10 +237,10 @@ class LoginResponse(BaseModel):
     """Schema for authentication token response."""
     
     access_token: str = Field(..., description="JWT access token")
+    refresh_token: str = Field(..., description="JWT refresh token")  # PASO 6: Made required
     token_type: str = Field(..., description="Type of token (bearer)")
     expires_in: int = Field(..., description="Token expiration time in seconds")
     user: UserResponse = Field(..., description="User information")
-    refresh_token: Optional[str] = Field(None, description="JWT refresh token (optional)")
     
     model_config = ConfigDict(
         json_schema_extra={
@@ -506,6 +506,42 @@ class DeleteUserResponse(BaseModel):
                 "message": "User successfully deactivated",
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "deleted_at": "2024-01-01T16:00:00Z"
+            }
+        }
+    )
+
+
+# PASO 6: Refresh Token Schemas
+
+class RefreshTokenRequest(BaseModel):
+    """Schema for refresh token request."""
+    
+    refresh_token: str = Field(..., description="Refresh token to exchange for new access token")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+        }
+    )
+
+
+class RefreshTokenResponse(BaseModel):
+    """Schema for refresh token response."""
+    
+    access_token: str = Field(..., description="New access token")
+    refresh_token: str = Field(..., description="New refresh token (rotated)")
+    token_type: str = Field(default="bearer", description="Token type")
+    expires_in: int = Field(..., description="Access token expiration time in seconds")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "token_type": "bearer",
+                "expires_in": 3600
             }
         }
     )

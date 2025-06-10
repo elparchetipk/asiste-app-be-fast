@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.config.database import get_db_session
 from app.infrastructure.repositories.sqlalchemy_user_repository import SQLAlchemyUserRepository
+from app.infrastructure.repositories.sqlalchemy_refresh_token_repository import SQLAlchemyRefreshTokenRepository  # PASO 6: Added
 from app.infrastructure.adapters.bcrypt_password_service import BcryptPasswordService
 from app.infrastructure.adapters.jwt_token_service import JWTTokenService
 from app.infrastructure.adapters.smtp_email_service import SMTPEmailService
@@ -15,10 +16,11 @@ from app.application.interfaces.password_service_interface import PasswordServic
 from app.application.interfaces.token_service_interface import TokenServiceInterface
 from app.application.interfaces.email_service_interface import EmailServiceInterface
 from app.domain.repositories.user_repository_interface import UserRepositoryInterface
+from app.domain.repositories.refresh_token_repository_interface import RefreshTokenRepositoryInterface  # PASO 6: Added
 
 from app.application.use_cases.auth_use_cases import (
     LoginUseCase,
-    # RefreshTokenUseCase,
+    RefreshTokenUseCase,  # PASO 6: Uncommented
     LogoutUseCase,
     ValidateTokenUseCase,
     # ChangePasswordUseCase
@@ -50,6 +52,14 @@ async def get_user_repository(
     return SQLAlchemyUserRepository(session)
 
 
+# PASO 6: Refresh Token Repository dependency
+async def get_refresh_token_repository(
+    session: AsyncSession = Depends(get_db_session)
+) -> RefreshTokenRepositoryInterface:
+    """Get refresh token repository instance."""
+    return SQLAlchemyRefreshTokenRepository(session)
+
+
 # Service dependencies
 @lru_cache()
 def get_password_service() -> PasswordServiceInterface:
@@ -72,19 +82,21 @@ def get_email_service() -> EmailServiceInterface:
 # Use case dependencies - Authentication
 def get_login_use_case(
     user_repository: UserRepositoryInterface = Depends(get_user_repository),
+    refresh_token_repository: RefreshTokenRepositoryInterface = Depends(get_refresh_token_repository),  # PASO 6: Added
     password_service: PasswordServiceInterface = Depends(get_password_service),
     token_service: TokenServiceInterface = Depends(get_token_service)
 ) -> LoginUseCase:
     """Get login use case instance."""
-    return LoginUseCase(user_repository, password_service, token_service)
+    return LoginUseCase(user_repository, refresh_token_repository, password_service, token_service)  # PASO 6: Updated
 
 
-# def get_refresh_token_use_case(
-#     user_repository: UserRepositoryInterface = Depends(get_user_repository),
-#     token_service: TokenServiceInterface = Depends(get_token_service)
-# ) -> RefreshTokenUseCase:
-#     """Get refresh token use case instance."""
-#     return RefreshTokenUseCase(user_repository, token_service)
+def get_refresh_token_use_case(  # PASO 6: Added
+    user_repository: UserRepositoryInterface = Depends(get_user_repository),
+    refresh_token_repository: RefreshTokenRepositoryInterface = Depends(get_refresh_token_repository),
+    token_service: TokenServiceInterface = Depends(get_token_service)
+) -> RefreshTokenUseCase:  # PASO 6: Added
+    """Get refresh token use case instance."""
+    return RefreshTokenUseCase(user_repository, refresh_token_repository, token_service)  # PASO 6: Added
 
 
 def get_logout_use_case(
@@ -100,14 +112,6 @@ def get_validate_token_use_case(
 ) -> ValidateTokenUseCase:
     """Get validate token use case instance."""
     return ValidateTokenUseCase(token_service, user_repository)
-
-
-# def get_change_password_use_case(
-#     user_repository: UserRepositoryInterface = Depends(get_user_repository),
-#     password_service: PasswordServiceInterface = Depends(get_password_service)
-# ) -> ChangePasswordUseCase:
-#     """Get change password use case instance."""
-#     return ChangePasswordUseCase(user_repository, password_service)
 
 
 def get_change_password_use_case(
@@ -143,13 +147,6 @@ def get_update_user_use_case(
     return UpdateUserUseCase(user_repository)
 
 
-# def get_delete_user_use_case(
-#     user_repository: UserRepositoryInterface = Depends(get_user_repository)
-# ) -> DeleteUserUseCase:
-#     """Get delete user use case instance."""
-#     return DeleteUserUseCase(user_repository)
-
-
 def get_activate_user_use_case(
     user_repository: UserRepositoryInterface = Depends(get_user_repository)
 ) -> ActivateUserUseCase:
@@ -170,20 +167,6 @@ def get_list_users_use_case(
 ) -> ListUsersUseCase:
     """Get list users use case instance."""
     return ListUsersUseCase(user_repository)
-
-
-# def get_get_user_profile_use_case(
-#     user_repository: UserRepositoryInterface = Depends(get_user_repository)
-# ) -> GetUserProfileUseCase:
-#     """Get get user profile use case instance."""
-#     return GetUserProfileUseCase(user_repository)
-
-
-# def get_update_user_profile_use_case(
-#     user_repository: UserRepositoryInterface = Depends(get_user_repository)
-# ) -> UpdateUserProfileUseCase:
-#     """Get update user profile use case instance."""
-#     return UpdateUserProfileUseCase(user_repository)
 
 
 # PASO 4: Dependencias para casos de uso de administración avanzada
